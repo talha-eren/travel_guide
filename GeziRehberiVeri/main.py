@@ -4,18 +4,7 @@ import json
 #api anahtarı
 GOOGLE_API_KEY = ''
 
-#location kordinatlarını yaz
-location = "41.0082,28.9784"
-radius = 5000
-place_type = "tourist_attraction"
-
-# locationa göre yerlerin bilgisi alınma kısmı
-url = f"https://maps.googleapis.com/maps/api/place/nearbysearch/json?location={location}&radius={radius}&type={place_type}&language=tr&key={GOOGLE_API_KEY}"
-response = requests.get(url)
-places = response.json().get("results", [])
-
 def geo_get_cityname(lat,lng):
-    location_geo=location
     geocode_url = f"https://maps.googleapis.com/maps/api/geocode/json?latlng={lat},{lng}&language=tr&key={GOOGLE_API_KEY}"
     geocode_response=requests.get(geocode_url)
     geocode_data=geocode_response.json()
@@ -26,7 +15,6 @@ def geo_get_cityname(lat,lng):
             if "locality" in component["types"] or "administrative_area_level_1" in component["types"]:
                 return component["long_name"]
     return "Şehir adı bulunamadı"
-
 
 def wikipedia_summary(place_name):
     # Wikipedia api
@@ -50,9 +38,28 @@ def wikipedia_summary(place_name):
     else:
         return {"title": None, "summary": "Bu yer için  bilgi bulunamadı."}
 
+#location kordinatlarını yaz
+location = "41.0082,28.9784"
+radius = 5000
+place_type = "tourist_attraction"
+
+# locationa göre yerlerin bilgisi alınma kısmı
+url = f"https://maps.googleapis.com/maps/api/place/nearbysearch/json?location={location}&radius={radius}&type={place_type}&language=tr&key={GOOGLE_API_KEY}"
+response = requests.get(url)
+places = response.json().get("results", [])
+
+excluded_keywords = ["otel", "hotel", "motel", "inn", "residence", "suit", "hostel", "pansion","flats"]
+
+filtered_places=[]
+
+for place in places:
+    place_name = place.get('name', '').lower()
+    if not any(keyword in place_name for keyword in excluded_keywords):
+        filtered_places.append(place)
+
 # Place id ile detaylı sorgu yapma
 all_place_details = []
-for place in places:
+for place in filtered_places:
     place_id = place["place_id"]
 
     #Sorgu
@@ -97,5 +104,4 @@ for place in places:
 #Bilgileri Jsona Kaydetme Kısmı
 with open("places_details.json", "w", encoding="utf-8") as file:
     json.dump(all_place_details, file, ensure_ascii=False, indent=4)
-print(response.json())
 print("Veriler 'places_details.json' dosyasına kaydedildi.")
