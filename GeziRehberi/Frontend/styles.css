@@ -3,7 +3,17 @@ body {
     line-height: 1.6;
     margin: 0;
     padding: 0;
+    
 }
+.türkiye{
+    max-width: 100%; /* Ensures the image is responsive */
+    height: auto;    /* Keeps the aspect ratio intact */
+    width: 80%;      /* Adjust this value to your preferred size */
+    margin: 0 auto;  /* Centers the image */
+    display: block;  /* Ensures it behaves like a block element */
+}
+
+
 
 header {
     background: #333;
@@ -76,4 +86,23 @@ footer {
     color: #fff;
     text-align: center;
     padding: 10px 0;
+}
+#slider {
+    width: 100%;
+    max-width: 600px; /* Maksimum genişliği belirleyin */
+    height: 100%;
+    margin: 0 auto; /* Ortala */
+    overflow: hidden; /* Taşan kısımları gizle */
+    position: relative;
+}
+
+.slider-image {
+    width: 1000x;
+    height: 700px;
+    display: none; /* Sadece bir tanesi görünecek */
+}
+
+/* İlk resim başlangıçta görünsün */
+.slider-image:first-child {
+    display: block;
 }
