@@ -11,7 +11,7 @@ class placeinfo:
         self.location = location
         self.radius = radius
         self.place_type = place_type
-        self.excluded_keywords = ["otel", "hotel", "motel", "inn", "residence", "suit", "hostel", "pansion", "flats"]
+        self.excluded_keywords = ["otel", "hotel", "motel", "inn", "residence", "suit", "hostel", "pansion", "flats","gokart","turizm"]
         self.all_place_details = []
 
 #Şehir adını almak için kullanılan metot
@@ -89,6 +89,7 @@ class placeinfo:
 
             # Verilerin kaydedilmesi
             place_info = {
+                "place_id": place_id,
                 "name": place_details.get("name"),
                 "address": place_details.get("formatted_address"),
                 "city_name": city_name,
