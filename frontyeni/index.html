@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gezi Rehberi</title>
+    
+    <!-- CSS Dosyaları -->
+    <link rel="stylesheet" href="assets/css/main.css">
+    <link rel="stylesheet" href="assets/css/modal.css">
+    <link rel="stylesheet" href="assets/css/responsive.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <!-- Include header component -->
+    <div id="header"></div>
+
+    <header id="home" class="hero">
+        <div class="hero-content">
+            <h1>Türkiye'nin En Güzel Yerlerini Keşfedin</h1>
+            <p>Tarihi, doğası ve kültürüyle eşsiz bir deneyim</p>
+        </div>
+    </header>
+
+    <section id="destinations" class="destinations">
+        <div class="container">
+            <h2>Popüler Mekanlar</h2>
+            <div id="popularPlaces" class="destination-grid">
+                <!-- Mekanlar dinamik olarak yüklenecek -->
+            </div>
+        </div>
+    </section>
+
+    <section id="about" class="about">
+        <div class="container">
+            <h2>Hakkımızda</h2>
+            <div class="about-content">
+                <p>Türkiye'nin en güzel yerlerini keşfetmenize yardımcı oluyoruz. Sizin için en iyi seyahat deneyimini sunmak için buradayız.</p>
+                <p>Amacımız, Türkiye'nin eşsiz güzelliklerini dünyaya tanıtmak ve gezginlere unutulmaz deneyimler yaşatmaktır.</p>
+                <div class="about-features">
+                    <div class="feature">
+                        <i class="fas fa-star"></i>
+                        <h3>En İyi Mekanlar</h3>
+                        <p>Seçilmiş en popüler mekanlar</p>
+                    </div>
+                    <div class="feature">
+                        <i class="fas fa-info-circle"></i>
+                        <h3>Detaylı Bilgi</h3>
+                        <p>Her mekan hakkında kapsamlı bilgiler</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="contact" class="contact">
+        <div class="container">
+            <h2>İletişim</h2>
+            <div class="contact-content">
+                <div class="contact-info">
+                    <div class="info-item">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <div>
+                            <h3>Adres</h3>
+                            <p>İstanbul, Türkiye</p>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-envelope"></i>
+                        <div>
+                            <h3>E-posta</h3>
+                            <p>info@gezilecekyer.com</p>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-phone"></i>
+                        <div>
+                            <h3>Telefon</h3>
+                            <p>+90 212 123 45 67</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Include footer component -->
+    <div id="footer"></div>
+
+    <!-- Include modal components -->
+    <div id="modals">
+        <!-- Giriş Modalı -->
+        <div id="loginModal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2>Giriş Yap</h2>
+                <form id="loginForm">
+                    <input type="email" placeholder="E-posta" required>
+                    <input type="password" placeholder="Şifre" required>
+                    <button type="submit" class="btn">Giriş Yap</button>
+                    <p class="form-footer">Hesabınız yok mu? <a href="#" id="switchToRegister">Kayıt Olun</a></p>
+                </form>
+            </div>
+        </div>
+
+        <!-- Kayıt Modalı -->
+        <div id="registerModal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2>Kayıt Ol</h2>
+                <form id="registerForm">
+                    <input type="text" placeholder="Ad Soyad" required>
+                    <input type="email" placeholder="E-posta" required>
+                    <input type="password" placeholder="Şifre" required>
+                    <input type="password" placeholder="Şifre Tekrar" required>
+                    <button type="submit" class="btn">Kayıt Ol</button>
+                    <p class="form-footer">Zaten hesabınız var mı? <a href="#" id="switchToLogin">Giriş Yapın</a></p>
+                </form>
+            </div>
+        </div>
+
+        <!-- Mekan Detayları Modalı -->
+        <div id="placeDetailsModal" class="modal">
+            <div class="modal-content">
+                <!-- Modal içeriği dinamik olarak yüklenecek -->
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Files -->
+    <script src="assets/js/data/places.js"></script>
+    <script src="assets/js/data/comments.js"></script>
+    <script src="assets/js/placeDetails.js"></script>
+    <script src="assets/js/comments.js"></script>
+    <script src="assets/js/search.js"></script>
+    <script src="assets/js/main.js"></script>
+    <script src="assets/js/auth.js"></script>
+</body>
+</html> 

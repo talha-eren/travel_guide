@@ -1,0 +1,68 @@
+<nav class="navbar">
+    <div class="logo">
+        <h1>Gezi Rehberi</h1>
+    </div>
+    <div class="search-container">
+        <input type="text" id="searchInput" placeholder="Şehir ara...">
+        <button class="search-btn"><i class="fas fa-search"></i></button>
+    </div>
+    <ul class="nav-links">
+        <li><a href="index.html">Ana Sayfa</a></li>
+        <li><a href="index.html#destinations">Mekanlar</a></li>
+        <li><a href="index.html#about">Hakkında</a></li>
+        <li><a href="index.html#contact">İletişim</a></li>
+        <li class="user-menu guest-menu">
+            <a href="#" id="loginBtn">Giriş Yap</a>
+            <a href="#" id="registerBtn">Kayıt Ol</a>
+        </li>
+        <li class="user-menu logged-in-menu" style="display: none;">
+            <div class="profile-dropdown">
+                <button class="profile-button">
+                    <div class="avatar-mini">
+                        <span class="avatar-text">JS</span>
+                    </div>
+                    <span class="user-name">John Smith</span>
+                    <i class="fas fa-chevron-down"></i>
+                </button>
+                <div class="dropdown-menu">
+                    <a href="profile.html?tab=profile">
+                        <i class="fas fa-user"></i> Profilim
+                    </a>
+                    <a href="profile.html?tab=favorites">
+                        <i class="fas fa-heart"></i> Favorilerim
+                    </a>
+                    <a href="profile.html?tab=comments">
+                        <i class="fas fa-comments"></i> Yorumlarım
+                    </a>
+                    <div class="dropdown-divider"></div>
+                    <a href="#" id="logoutBtn">
+                        <i class="fas fa-sign-out-alt"></i> Çıkış Yap
+                    </a>
+                </div>
+            </div>
+        </li>
+    </ul>
+</nav>
+
+<!-- Search Results Section -->
+<div id="searchResults" class="search-results">
+    <div class="search-results-content">
+        <h2>Arama Sonuçları</h2>
+        <div class="filter-section">
+            <select id="sortFilter" class="filter-select">
+                <option value="default">Varsayılan Sıralama</option>
+                <option value="rating-high">Puan (Yüksekten Düşüğe)</option>
+                <option value="rating-low">Puan (Düşükten Yükseğe)</option>
+                <option value="name-asc">İsim (A-Z)</option>
+                <option value="name-desc">İsim (Z-A)</option>
+            </select>
+            <label class="filter-checkbox">
+                <input type="checkbox" id="openFilter">
+                Sadece Açık Mekanlar
+            </label>
+        </div>
+        <div id="resultsGrid" class="destination-grid">
+            <!-- Search results will be loaded dynamically -->
+        </div>
+    </div>
+</div> 
