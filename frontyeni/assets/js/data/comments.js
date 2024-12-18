@@ -1,62 +1,78 @@
 // Yorum verileri
-const comments = [
+window.comments = [
     {
         id: 1,
-        place_id: 1, // Ayasofya'ya ait yorum
-        user_id: 1,
         user: {
             id: 1,
             name: "Ahmet Yılmaz",
+            email: "ahmet@example.com",
             avatar: "A"
         },
-        date: "2024-02-11",
-        content: "Harika bir yer, mutlaka görülmeli!",
-        likes: 12,
-        liked: false
+        place_id: 1,
+        place_name: "Kapadokya Peri Bacaları",
+        content: "Muhteşem bir deneyimdi, kesinlikle tavsiye ederim!",
+        date: "2024-01-15",
+        status: "approved",
+        likes: 5
     },
     {
         id: 2,
-        place_id: 1, // Ayasofya'ya ait yorum
-        user_id: 2,
         user: {
             id: 2,
             name: "Ayşe Demir",
+            email: "ayse@example.com",
             avatar: "A"
         },
-        date: "2024-02-10",
-        content: "Tarihi dokusu muhteşem, çok etkileyici.",
-        likes: 8,
-        liked: true
+        place_id: 2,
+        place_name: "Pamukkale Travertenleri",
+        content: "Harika bir yer ama biraz kalabalıktı.",
+        date: "2024-01-14",
+        status: "approved",
+        likes: 0
     },
     {
         id: 3,
-        place_id: 2, // Topkapı Sarayı'na ait yorum
-        user_id: 1,
         user: {
-            id: 1,
-            name: "Ahmet Yılmaz",
-            avatar: "A"
+            id: 3,
+            name: "Mehmet Kaya",
+            email: "mehmet@example.com",
+            avatar: "M"
         },
-        date: "2024-02-09",
-        content: "Osmanlı tarihini yakından hissetmek için muhteşem bir mekan.",
-        likes: 15,
-        liked: false
+        place_id: 3,
+        place_name: "Efes Antik Kenti",
+        content: "Tarihi dokusu muhteşem, rehber eşliğinde gezmenizi öneririm.",
+        date: "2024-01-13",
+        status: "approved",
+        likes: 8
     },
     {
         id: 4,
-        place_id: 3, // Denemeye ait yorum
-        user_id: 1,
         user: {
-            id: 1,
-            name: "s",
-            avatar: "A"
+            id: 4,
+            name: "Zeynep Şahin",
+            email: "zeynep@example.com",
+            avatar: "Z"
         },
-        date: "2024-02-09",
-        content: "Deneme.",
-        likes: 15,
-        liked: false
+        place_id: 1,
+        place_name: "Kapadokya Peri Bacaları",
+        content: "Balon turu için sabah çok erken kalkmak gerekiyor ama değer!",
+        date: "2024-01-12",
+        status: "approved",
+        likes: 3
+    },
+    {
+        id: 5,
+        user: {
+            id: 5,
+            name: "Can Öztürk",
+            email: "can@example.com",
+            avatar: "C"
+        },
+        place_id: 4,
+        place_name: "Sümela Manastırı",
+        content: "Uygunsuz içerik nedeniyle yasaklandı.",
+        date: "2024-01-11",
+        status: "banned",
+        likes: 0
     }
 ];
-
-// Global scope'a ekle
-window.comments = comments; 

@@ -1233,7 +1233,7 @@ footer {
     }
 }
 
-/* Profil Dropdown Men�� */
+/* Profil Dropdown Menü */
 .profile-dropdown {
     position: relative;
     display: inline-block;
@@ -1564,4 +1564,367 @@ footer {
     .filter-select {
         width: 100%;
     }
+} 
+
+/* Admin Sayfası Stilleri */
+.admin-page {
+    background-color: #f5f5f5;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.admin-login-container {
+    width: 100%;
+    max-width: 400px;
+    padding: 20px;
+}
+
+.admin-login-box {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    padding: 2rem;
+}
+
+.admin-login-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.admin-login-header h1 {
+    font-size: 1.8rem;
+    color: #333;
+    margin-bottom: 0.5rem;
+}
+
+.admin-login-header h2 {
+    font-size: 1.2rem;
+    color: #666;
+}
+
+.admin-login-form .form-group {
+    margin-bottom: 1.5rem;
+}
+
+.admin-login-form label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #555;
+}
+
+.admin-login-form input {
+    width: 100%;
+    padding: 0.8rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+.admin-login-form input:focus {
+    border-color: #007bff;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.admin-login-form .btn {
+    width: 100%;
+    padding: 0.8rem;
+    font-size: 1rem;
+    margin-top: 1rem;
+}
+
+/* Admin Dashboard Stilleri */
+.admin-dashboard {
+    display: flex;
+    min-height: 100vh;
+}
+
+.admin-sidebar {
+    width: 250px;
+    background: #333;
+    color: white;
+    padding: 1rem;
+}
+
+.admin-content {
+    flex: 1;
+    padding: 2rem;
+    background: #f5f5f5;
+}
+
+/* Responsive Tasarım */
+@media (max-width: 768px) {
+    .admin-login-container {
+        padding: 15px;
+    }
+    
+    .admin-login-box {
+        padding: 1.5rem;
+    }
+} 
+
+/* Admin Dashboard Ek Stilleri */
+.admin-sidebar-header {
+    padding: 1rem 0;
+    text-align: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 1rem;
+}
+
+.admin-sidebar-header h1 {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.admin-sidebar-header p {
+    font-size: 0.9rem;
+    opacity: 0.7;
+}
+
+.admin-nav ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.admin-nav li {
+    margin-bottom: 0.5rem;
+}
+
+.admin-nav a {
+    display: flex;
+    align-items: center;
+    padding: 0.8rem 1rem;
+    color: white;
+    text-decoration: none;
+    border-radius: 4px;
+    transition: background-color 0.3s;
+}
+
+.admin-nav a:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.admin-nav li.active a {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.admin-nav i {
+    margin-right: 0.8rem;
+    width: 20px;
+    text-align: center;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.filter-controls {
+    display: flex;
+    gap: 1rem;
+}
+
+.filter-select, .search-input {
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 0.9rem;
+}
+
+.search-input {
+    min-width: 200px;
+}
+
+.comments-table {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.comments-table table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.comments-table th,
+.comments-table td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+
+.comments-table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+}
+
+.comments-table tr:last-child td {
+    border-bottom: none;
+}
+
+.comments-table .status {
+    padding: 0.3rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.status-pending {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.status-approved {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.status-rejected {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.action-btn {
+    padding: 0.4rem 0.8rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: background-color 0.3s;
+}
+
+.approve-btn {
+    background-color: #28a745;
+    color: white;
+}
+
+.reject-btn {
+    background-color: #dc3545;
+    color: white;
+}
+
+.delete-btn {
+    background-color: #6c757d;
+    color: white;
+}
+
+.action-btn:hover {
+    opacity: 0.9;
+}
+
+/* Responsive Tasarım */
+@media (max-width: 1024px) {
+    .admin-sidebar {
+        width: 200px;
+    }
+}
+
+@media (max-width: 768px) {
+    .admin-dashboard {
+        flex-direction: column;
+    }
+    
+    .admin-sidebar {
+        width: 100%;
+    }
+    
+    .section-header {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .filter-controls {
+        width: 100%;
+        flex-direction: column;
+    }
+    
+    .comments-table {
+        overflow-x: auto;
+    }
+} 
+
+/* Admin Panel Avatar Stilleri */
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.user-avatar {
+    width: 32px;
+    height: 32px;
+    background-color: #007bff;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 14px;
+    flex-shrink: 0;
+}
+
+.user-email {
+    color: #2c3e50;
+}
+
+/* Mevcut stiller devam ediyor... */ 
+
+/* Kullanıcı Durumları */
+.status-active {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.status-banned {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+/* Tablo Stilleri */
+.users-table {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.users-table table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.users-table th,
+.users-table td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+
+.users-table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+}
+
+.users-table tr:last-child td {
+    border-bottom: none;
+} 
+
+.admin-section {
+    display: none;
+}
+
+.admin-section.active {
+    display: block;
 } 

@@ -33,7 +33,7 @@ const places = [
         opening_hours: [
             "Pazartesi: Kapalı",
             "Salı: 09:00–17:00",
-            "Çarşamba: 09:00–17:00",
+            "Çarşamba: Kapalı",
             "Perşembe: 09:00–17:00",
             "Cuma: 09:00–17:00",
             "Cumartesi: 09:00–17:00",
@@ -59,7 +59,7 @@ const places = [
         opening_hours: [
             "Pazartesi: 09:00–17:00",
             "Salı: Kapalı",
-            "Çarşamba: 09:00–17:00",
+            "Çarşamba: Kapalı",
             "Perşembe: 09:00–17:00",
             "Cuma: 09:00–17:00",
             "Cumartesi: 09:00–17:00",

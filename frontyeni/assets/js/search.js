@@ -15,13 +15,11 @@ function initSearch() {
     // Filtreleme olaylarını dinle
     if (sortFilter && openFilter) {
         sortFilter.addEventListener('change', () => {
-            const currentPlaces = window.currentSearchResults || [];
-            displaySearchResults(currentPlaces, searchResults);
+            performSearch();
         });
         
         openFilter.addEventListener('change', () => {
-            const currentPlaces = window.currentSearchResults || [];
-            displaySearchResults(currentPlaces, searchResults);
+            performSearch();
         });
     }
 
@@ -302,6 +300,9 @@ function filterAndSortPlaces(places) {
             // Varsayılan sıralama (değişiklik yok)
             break;
     }
+    
+    // Filtrelenmiş sonuçları global değişkende sakla
+    window.currentSearchResults = filteredPlaces;
     
     return filteredPlaces;
 }

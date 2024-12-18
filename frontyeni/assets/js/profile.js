@@ -391,7 +391,7 @@ function loadUserComments() {
     if (!commentsContainer) return;
 
     // Global comments dizisinden kullanıcının yorumlarını filtrele
-    const userComments = window.comments.filter(comment => comment.user_id === user.id);
+    const userComments = window.comments.filter(comment => comment.user.id === user.id);
 
     if (userComments.length === 0) {
         commentsContainer.innerHTML = '<p class="no-comments">Henüz yorum yapmamışsınız.</p>';
@@ -400,11 +400,10 @@ function loadUserComments() {
 
     // Her yorum için ilgili mekan bilgisini bul ve yorumları listele
     const commentsHTML = userComments.map(comment => {
-        const place = window.places.find(p => p.id === comment.place_id);
         return `
             <div class="comment-item" data-comment-id="${comment.id}">
                 <div class="comment-header">
-                    <h4>${place ? place.name : 'Silinmiş Mekan'}</h4>
+                    <h4>${comment.place_name}</h4>
                     <span class="comment-date">${new Date(comment.date).toLocaleDateString('tr-TR')}</span>
                 </div>
                 <div class="comment-content">

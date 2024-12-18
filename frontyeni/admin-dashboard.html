@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Gezi Rehberi</title>
+    <link rel="stylesheet" href="assets/css/main.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body>
+    <div class="admin-dashboard">
+        <!-- Sidebar -->
+        <div class="admin-sidebar">
+            <div class="admin-sidebar-header">
+                <h1>Gezi Rehberi</h1>
+                <p>Admin Panel</p>
+            </div>
+            <nav class="admin-nav">
+                <ul>
+                    <li class="active">
+                        <a href="#" data-section="comments">
+                            <i class="fas fa-comments"></i>
+                            Yorum Yönetimi
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" data-section="users">
+                            <i class="fas fa-users"></i>
+                            Kullanıcılar
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" onclick="handleAdminLogout()">
+                            <i class="fas fa-sign-out-alt"></i>
+                            Çıkış Yap
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+
+        <!-- Ana İçerik -->
+        <div class="admin-content">
+            <!-- Yorum Yönetimi Bölümü -->
+            <div class="admin-section active" id="comments-section">
+                <div class="section-header">
+                    <h2>Yorum Yönetimi</h2>
+                    <div class="filter-controls">
+                        <select id="statusFilter" class="filter-select">
+                            <option value="all">Tüm Durumlar</option>
+                            <option value="approved">Onaylı</option>
+                            <option value="banned">Yasaklı</option>
+                        </select>
+                        <input type="text" id="searchComments" placeholder="Yorum ara..." class="search-input">
+                    </div>
+                </div>
+
+                <div class="comments-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Kullanıcı</th>
+                                <th>Mekan</th>
+                                <th>Yorum</th>
+                                <th>Tarih</th>
+                                <th>Durum</th>
+                                <th>İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody id="commentsTableBody">
+                            <!-- Yorumlar JavaScript ile doldurulacak -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Kullanıcılar Bölümü -->
+            <div class="admin-section" id="users-section">
+                <div class="section-header">
+                    <h2>Kullanıcı Yönetimi</h2>
+                    <div class="filter-controls">
+                        <select id="userStatusFilter" class="filter-select">
+                            <option value="all">Tüm Durumlar</option>
+                            <option value="active">Aktif</option>
+                            <option value="banned">Yasaklı</option>
+                        </select>
+                        <input type="text" id="searchUsers" placeholder="Kullanıcı ara..." class="search-input">
+                    </div>
+                </div>
+
+                <div class="users-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Kullanıcı</th>
+                                <th>Kayıt Tarihi</th>
+                                <th>Yorum Sayısı</th>
+                                <th>Durum</th>
+                                <th>İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTableBody">
+                            <!-- Kullanıcılar JavaScript ile doldurulacak -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Önce veri dosyalarını yükle -->
+    <script src="assets/js/data/comments.js"></script>
+    <script src="assets/js/data/users.js"></script>
+    <!-- Sonra admin.js'i yükle -->
+    <script src="assets/js/admin.js"></script>
+</body>
+</html> 
