@@ -1,201 +1,131 @@
-// Sayfa yüklendiğinde auth durumunu kontrol et
+// Form submit işlemleri
 document.addEventListener('DOMContentLoaded', () => {
-    checkAuthState();
-    initAuth();
+    const loginForm = document.getElementById('loginForm');
+    const registerForm = document.getElementById('registerForm');
+
+    // Giriş formu submit
+    loginForm?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const email = document.getElementById('loginEmail').value;
+        const password = document.getElementById('loginPassword').value;
+
+        try {
+            const response = await fetch(`${API_URL}/auth/login`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ email, password })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message || 'Giriş yapılırken bir hata oluştu');
+            }
+
+            // Token ve kullanıcı bilgilerini kaydet
+            localStorage.setItem('token', data.token);
+            localStorage.setItem('user', JSON.stringify(data.user));
+
+            // Modalı kapat
+            const loginModal = document.getElementById('loginModal');
+            closeModal(loginModal);
+
+            // Başarılı mesajı göster
+            alert('Başarıyla giriş yapıldı!');
+
+            // Sayfayı yenile
+            window.location.reload();
+
+        } catch (error) {
+            console.error('Login error:', error);
+            alert(error.message);
+        }
+    });
+
+    // Kayıt formu submit
+    registerForm?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const fullName = document.getElementById('registerName').value;
+        const email = document.getElementById('registerEmail').value;
+        const password = document.getElementById('registerPassword').value;
+        const passwordConfirm = document.getElementById('registerPasswordConfirm').value;
+
+        // Şifre kontrolü
+        if (password !== passwordConfirm) {
+            alert('Şifreler eşleşmiyor!');
+            return;
+        }
+
+        try {
+            const response = await fetch(`${API_URL}/auth/register`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ fullName, email, password })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message || 'Kayıt olurken bir hata oluştu');
+            }
+
+            // Kayıt başarılı mesajı
+            alert('Kayıt başarılı! Şimdi giriş yapabilirsiniz.');
+
+            // Kayıt modalını kapat ve giriş modalını aç
+            const registerModal = document.getElementById('registerModal');
+            const loginModal = document.getElementById('loginModal');
+            closeModal(registerModal);
+            loginModal.style.display = 'flex';
+
+        } catch (error) {
+            console.error('Register error:', error);
+            alert(error.message);
+        }
+    });
 });
 
-// Auth başlatma
-function initAuth() {
-    // Modal elementlerini al
-    const loginModal = document.getElementById('loginModal');
-    const registerModal = document.getElementById('registerModal');
-    const loginBtn = document.getElementById('loginBtn');
-    const registerBtn = document.getElementById('registerBtn');
-    const closeBtns = document.querySelectorAll('.close');
-    const switchToRegister = document.getElementById('switchToRegister');
-    const switchToLogin = document.getElementById('switchToLogin');
-
-    // Login/Register form submit
-    document.getElementById('loginForm')?.addEventListener('submit', handleLogin);
-    document.getElementById('registerForm')?.addEventListener('submit', handleRegister);
-    
-    // Modal açma işlevleri
-    loginBtn?.addEventListener('click', (e) => {
-        e.preventDefault();
-        loginModal.style.display = 'flex';
-        document.body.style.overflow = 'hidden';
-    });
-
-    registerBtn?.addEventListener('click', (e) => {
-        e.preventDefault();
-        registerModal.style.display = 'flex';
-        document.body.style.overflow = 'hidden';
-    });
-
-    // Modal geçişleri
-    switchToRegister?.addEventListener('click', (e) => {
-        e.preventDefault();
-        closeModal(loginModal);
-        registerModal.style.display = 'flex';
-        document.body.style.overflow = 'hidden';
-    });
-
-    switchToLogin?.addEventListener('click', (e) => {
-        e.preventDefault();
-        closeModal(registerModal);
-        loginModal.style.display = 'flex';
-        document.body.style.overflow = 'hidden';
-    });
-
-    // X butonuyla kapatma
-    closeBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            closeModal(loginModal);
-            closeModal(registerModal);
-        });
-    });
-
-    // Dışarı tıklayarak kapatma
-    window.addEventListener('click', (e) => {
-        if (e.target === loginModal || e.target === registerModal) {
-            closeModal(loginModal);
-            closeModal(registerModal);
-        }
-    });
-
-    // ESC tuşu ile kapatma
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') {
-            closeModal(loginModal);
-            closeModal(registerModal);
-        }
-    });
+// Çıkış yapma
+function logout() {
+    // Token ve kullanıcı bilgilerini sil
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    // Ana sayfaya yönlendir
+    window.location.href = './index.html';
 }
 
-// Auth durumunu kontrol et
-function checkAuthState() {
-    const user = JSON.parse(localStorage.getItem('currentUser'));
-    if (user) {
-        // Kullanıcı giriş yapmış
-        updateUIForAuthState(true, user);
-    } else {
-        // Kullanıcı giriş yapmamış
-        updateUIForAuthState(false, null);
-    }
-}
-
-// UI'ı auth durumuna göre güncelle
-function updateUIForAuthState(isLoggedIn, user) {
+// Menüyü güncelle
+function updateMenu() {
+    const token = localStorage.getItem('token');
     const guestMenu = document.querySelector('.guest-menu');
     const loggedInMenu = document.querySelector('.logged-in-menu');
     
-    if (isLoggedIn && user) {
-        // Giriş yapmış kullanıcı UI'ı
+    if (token) {
         if (guestMenu) guestMenu.style.display = 'none';
         if (loggedInMenu) {
-            loggedInMenu.style.display = 'block';
-            // Avatar ve kullanıcı adını güncelle
-            const avatarText = loggedInMenu.querySelector('.avatar-text');
-            const userName = loggedInMenu.querySelector('.user-name');
-            if (avatarText) avatarText.textContent = getInitials(user.name);
-            if (userName) userName.textContent = user.name;
+            loggedInMenu.style.display = 'flex';
+            // Kullanıcı bilgilerini güncelle
+            const user = JSON.parse(localStorage.getItem('user'));
+            if (user) {
+                const avatarText = loggedInMenu.querySelector('.avatar-text');
+                const userName = loggedInMenu.querySelector('.user-name');
+                if (avatarText) avatarText.textContent = getInitials(user.fullName);
+                if (userName) userName.textContent = user.fullName;
+            }
         }
     } else {
-        // Giriş yapmamış kullanıcı UI'ı
-        if (guestMenu) guestMenu.style.display = 'block';
+        if (guestMenu) guestMenu.style.display = 'flex';
         if (loggedInMenu) loggedInMenu.style.display = 'none';
     }
 }
 
-// Çıkış işlemi
-function handleLogout() {
-    // localStorage'dan kullanıcı bilgilerini sil
-    localStorage.removeItem('currentUser');
-    
-    // Bildirim göster
-    alert('Başarıyla çıkış yaptınız');
-
-    // Sayfayı yenile
-    window.location.reload();
-}
-
-// Giriş işlemi
-async function handleLogin(e) {
-    e.preventDefault();
-    
-    // Form verilerini al
-    const email = document.querySelector('#loginForm input[type="email"]').value;
-    const password = document.querySelector('#loginForm input[type="password"]').value;
-
-    try {
-        // Test için örnek kullanıcı
-        const user = {
-            id: 1,
-            name: "John Smith",
-            email: email,
-            isVerified: true
-        };
-
-        // Kullanıcı bilgilerini kaydet
-        localStorage.setItem('currentUser', JSON.stringify(user));
-        
-        // UI'ı güncelle
-        updateUIForAuthState(true, user);
-        
-        // Modal'ı kapat ve scroll'u düzelt
-        closeModal(document.getElementById('loginModal'));
-        
-        showNotification('Başarıyla giriş yaptınız!', 'success');
-    } catch (error) {
-        console.error('Giriş hatası:', error);
-        showNotification('Giriş yapılırken bir hata oluştu', 'error');
-    }
-}
-
-// Kayıt işlemi
-async function handleRegister(e) {
-    e.preventDefault();
-    
-    // Form verilerini al
-    const name = document.querySelector('#registerForm input[type="text"]').value;
-    const email = document.querySelector('#registerForm input[type="email"]').value;
-    const password = document.querySelector('#registerForm input[type="password"]').value;
-
-    try {
-        // Test için örnek kullanıcı
-        const user = {
-            id: 1,
-            name: name,
-            email: email,
-            isVerified: false
-        };
-
-        // Kullanıcı bilgilerini kaydet
-        localStorage.setItem('currentUser', JSON.stringify(user));
-        
-        // UI'ı güncelle
-        updateUIForAuthState(true, user);
-        
-        // Modal'ı kapat ve scroll'u düzelt
-        closeModal(document.getElementById('registerModal'));
-        
-        showNotification('Başarıyla kayıt oldunuz!', 'success');
-    } catch (error) {
-        console.error('Kayıt hatası:', error);
-        showNotification('Kayıt olurken bir hata oluştu', 'error');
-    }
-}
-
-// Modal kapatma yardımcı fonksiyonu
-function closeModal(modal) {
-    if (modal) {
-        modal.style.display = 'none';
-        document.body.style.overflow = '';
-        document.body.style.paddingRight = '';
-    }
-}
-
-// Yardımcı fonksiyonlar
+// İsmin baş harflerini al
 function getInitials(name) {
     return name
         .split(' ')
@@ -204,19 +134,11 @@ function getInitials(name) {
         .toUpperCase();
 }
 
-function showNotification(message, type = 'info') {
-    alert(message); // Şimdilik basit bir alert
+// Çıkış butonu için event listener
+const logoutButton = document.querySelector('#logoutBtn');
+if (logoutButton) {
+    logoutButton.addEventListener('click', (e) => {
+        e.preventDefault();
+        logout();
+    });
 }
-
-// Header'ı yeniden yükle
-async function loadComponent(elementId, componentPath) {
-    try {
-        const response = await fetch(componentPath);
-        const html = await response.text();
-        document.getElementById(elementId).innerHTML = html;
-        return true;
-    } catch (error) {
-        console.error(`Error loading component ${componentPath}:`, error);
-        return false;
-    }
-} 

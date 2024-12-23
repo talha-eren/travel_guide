@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' http://localhost:5000 http://127.0.0.1:5000 https://cdnjs.cloudflare.com data: blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; font-src 'self' https://cdnjs.cloudflare.com; img-src 'self' data: https: blob:; connect-src 'self' http://localhost:5000 http://127.0.0.1:5000">
     <title>Gezi Rehberi</title>
     
     <!-- CSS Dosyaları -->
@@ -22,11 +23,33 @@
         </div>
     </header>
 
-    <section id="destinations" class="destinations">
+    <section id="destinations" class="destinations-section">
         <div class="container">
             <h2>Popüler Mekanlar</h2>
-            <div id="popularPlaces" class="destination-grid">
-                <!-- Mekanlar dinamik olarak yüklenecek -->
+            <form id="filterForm" class="filters">
+                <select id="categoryFilter" name="category" class="filter-select">
+                    <option value="">Tüm Kategoriler</option>
+                    <option value="Tarihi">Tarihi</option>
+                    <option value="Doğal">Doğal</option>
+                    <option value="Kültürel">Kültürel</option>
+                    <option value="Eğlence">Eğlence</option>
+                    <option value="Yeme-İçme">Yeme-İçme</option>
+                </select>
+                <select id="cityFilter" name="city" class="filter-select">
+                    <option value="">Tüm Şehirler</option>
+                </select>
+                <div class="search-box">
+                    <input type="text" id="searchInput" name="search" placeholder="Mekan ara...">
+                    <button type="submit" id="searchButton"><i class="fas fa-search"></i></button>
+                </div>
+            </form>
+            <div id="placesList" class="places-grid">
+                <!-- Mekanlar buraya dinamik olarak eklenecek -->
+            </div>
+            <div class="pagination">
+                <button id="prevPage" class="page-btn" type="button"><i class="fas fa-chevron-left"></i></button>
+                <span id="currentPage">Sayfa 1</span>
+                <button id="nextPage" class="page-btn" type="button"><i class="fas fa-chevron-right"></i></button>
             </div>
         </div>
     </section>
@@ -95,8 +118,8 @@
                 <span class="close">&times;</span>
                 <h2>Giriş Yap</h2>
                 <form id="loginForm">
-                    <input type="email" placeholder="E-posta" required>
-                    <input type="password" placeholder="Şifre" required>
+                    <input type="email" id="loginEmail" name="email" placeholder="E-posta" required>
+                    <input type="password" id="loginPassword" name="password" placeholder="Şifre" required>
                     <button type="submit" class="btn">Giriş Yap</button>
                     <p class="form-footer">Hesabınız yok mu? <a href="#" id="switchToRegister">Kayıt Olun</a></p>
                 </form>
@@ -109,10 +132,10 @@
                 <span class="close">&times;</span>
                 <h2>Kayıt Ol</h2>
                 <form id="registerForm">
-                    <input type="text" placeholder="Ad Soyad" required>
-                    <input type="email" placeholder="E-posta" required>
-                    <input type="password" placeholder="Şifre" required>
-                    <input type="password" placeholder="Şifre Tekrar" required>
+                    <input type="text" id="registerName" name="name" placeholder="Ad Soyad" required>
+                    <input type="email" id="registerEmail" name="email" placeholder="E-posta" required>
+                    <input type="password" id="registerPassword" name="password" placeholder="Şifre" required>
+                    <input type="password" id="registerPasswordConfirm" name="passwordConfirm" placeholder="Şifre Tekrar" required>
                     <button type="submit" class="btn">Kayıt Ol</button>
                     <p class="form-footer">Zaten hesabınız var mı? <a href="#" id="switchToLogin">Giriş Yapın</a></p>
                 </form>
@@ -128,12 +151,9 @@
     </div>
 
     <!-- JavaScript Files -->
-    <script src="assets/js/data/places.js"></script>
-    <script src="assets/js/data/comments.js"></script>
-    <script src="assets/js/placeDetails.js"></script>
-    <script src="assets/js/comments.js"></script>
-    <script src="assets/js/search.js"></script>
     <script src="assets/js/main.js"></script>
+    <script src="assets/js/components.js"></script>
     <script src="assets/js/auth.js"></script>
+    <script src="assets/js/places.js"></script>
 </body>
 </html> 
