@@ -20,7 +20,8 @@ const userSchema = new mongoose.Schema({
     },
     favorites: [{
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Place'
+        ref: 'Place',
+        unique: true
     }],
     createdAt: {
         type: Date,

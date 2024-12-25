@@ -248,6 +248,83 @@ async function loadUserComments() {
     }
 }
 
+// Kullanıcının favorilerini yükle
+async function loadUserFavorites() {
+    try {
+        const response = await fetch(`${API_URL}/profile/favorites`, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error('Favoriler yüklenirken bir hata oluştu');
+        }
+
+        const favorites = await response.json();
+        const favoritesContainer = document.querySelector('.favorites-grid');
+        
+        if (!favorites || favorites.length === 0) {
+            favoritesContainer.innerHTML = '<p class="no-data">Henüz favori mekanınız yok.</p>';
+            return;
+        }
+
+        favoritesContainer.innerHTML = favorites.map(place => `
+            <div class="place-card">
+                <div class="place-image">
+                    <img src="${place.images?.[0] || 'assets/images/placeholder.jpg'}" alt="${place.name}">
+                </div>
+                <div class="place-info">
+                    <h3>${place.name}</h3>
+                    <p class="place-location"><i class="fas fa-map-marker-alt"></i> ${place.city}</p>
+                    <p class="place-category"><i class="fas fa-tag"></i> ${place.category}</p>
+                    <div class="place-rating">
+                        ${getStarRating(place.rating || 0)}
+                        <span>(${place.totalRatings || 0} değerlendirme)</span>
+                    </div>
+                    <div class="place-actions">
+                        <a href="place-details.html?id=${place._id}" class="btn-link">
+                            <i class="fas fa-external-link-alt"></i> Detayları Gör
+                        </a>
+                        <button onclick="removeFavorite('${place._id}')" class="btn-remove">
+                            <i class="fas fa-heart-broken"></i> Favorilerden Çıkar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+
+    } catch (error) {
+        console.error('Error loading favorites:', error);
+        document.querySelector('.favorites-grid').innerHTML = 
+            '<div class="error-message">Favoriler yüklenirken bir hata oluştu</div>';
+    }
+}
+
+// Favorilerden mekan çıkar
+async function removeFavorite(placeId) {
+    try {
+        const response = await fetch(`${API_URL}/profile/favorites/${placeId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        });
+
+        if (!response.ok) {
+            const data = await response.json();
+            throw new Error(data.message || 'Favorilerden çıkarılırken bir hata oluştu');
+        }
+
+        // Favorileri yeniden yükle
+        await loadUserFavorites();
+        showNotification('Mekan favorilerden çıkarıldı', 'success');
+    } catch (error) {
+        console.error('Error removing favorite:', error);
+        showNotification(error.message, 'error');
+    }
+}
+
 // Tab içeriğini yükle
 async function loadTabContent(tabId) {
     // Önce tab'ı aktif et
@@ -259,7 +336,7 @@ async function loadTabContent(tabId) {
             await getProfile();
             break;
         case 'favorites':
-            // Favorileri yükle
+            await loadUserFavorites();
             break;
         case 'comments':
             await loadUserComments();

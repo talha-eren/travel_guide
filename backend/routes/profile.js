@@ -67,7 +67,18 @@ router.put('/change-password', auth, async (req, res) => {
 router.get('/favorites', auth, async (req, res) => {
     try {
         const user = await User.findById(req.user.id).populate('favorites');
-        res.json(user.favorites);
+        
+        // Mükerrer kayıtları filtrele
+        const uniqueFavorites = user.favorites.reduce((acc, current) => {
+            const x = acc.find(item => item._id.toString() === current._id.toString());
+            if (!x) {
+                return acc.concat([current]);
+            } else {
+                return acc;
+            }
+        }, []);
+
+        res.json(uniqueFavorites);
     } catch (error) {
         console.error('Error fetching favorites:', error);
         res.status(500).json({ message: 'Favoriler getirilirken bir hata oluştu' });
@@ -77,11 +88,27 @@ router.get('/favorites', auth, async (req, res) => {
 // Favorilere mekan ekle
 router.post('/favorites/:placeId', auth, async (req, res) => {
     try {
-        const user = await User.findById(req.user.id);
-        if (!user.favorites.includes(req.params.placeId)) {
-            user.favorites.push(req.params.placeId);
-            await user.save();
+        // Önce mekanın var olup olmadığını kontrol et
+        const place = await Place.findById(req.params.placeId);
+        if (!place) {
+            return res.status(404).json({ message: 'Mekan bulunamadı' });
         }
+
+        const user = await User.findById(req.user.id);
+        
+        // Mekan zaten favorilerde mi kontrol et
+        const isAlreadyFavorite = user.favorites.some(
+            favId => favId.toString() === req.params.placeId
+        );
+
+        if (isAlreadyFavorite) {
+            return res.status(400).json({ message: 'Bu mekan zaten favorilerinizde' });
+        }
+
+        // Favorilere ekle
+        user.favorites.push(req.params.placeId);
+        await user.save();
+        
         res.json({ message: 'Mekan favorilere eklendi' });
     } catch (error) {
         console.error('Error adding to favorites:', error);

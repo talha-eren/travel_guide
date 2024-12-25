@@ -205,68 +205,61 @@ function setupOpeningHours(hours) {
 }
 
 // Favori butonunu ayarla
-function setupFavoriteButton(placeId) {
+async function setupFavoriteButton(placeId) {
     const favoriteBtn = document.getElementById('favoriteBtn');
     const isLoggedIn = checkAuth();
     
-    // Favori durumunu kontrol et
-    if (isLoggedIn) {
-        checkIfFavorite(placeId).then(isFavorite => {
-            updateFavoriteButton(favoriteBtn, isFavorite);
+    if (!isLoggedIn) {
+        favoriteBtn.addEventListener('click', () => {
+            showLoginModal();
         });
+        return;
     }
 
-    favoriteBtn.addEventListener('click', async () => {
-        if (!isLoggedIn) {
-            const loginModal = document.getElementById('loginModal');
-            if (loginModal) {
-                loginModal.style.display = 'flex';
-                document.body.style.overflow = 'hidden';
-            }
-            return;
-        }
-
-        try {
-            const isFavorite = favoriteBtn.classList.contains('active');
-            const response = await fetch(`${API_URL}/profile/favorites/${placeId}`, {
-                method: isFavorite ? 'DELETE' : 'POST',
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                }
-            });
-
-            if (!response.ok) {
-                throw new Error('İşlem başarısız');
-            }
-
-            updateFavoriteButton(favoriteBtn, !isFavorite);
-
-        } catch (error) {
-            console.error('Favorite error:', error);
-            alert('İşlem sırasında bir hata oluştu');
-        }
-    });
-}
-
-// Favori durumunu kontrol et
-async function checkIfFavorite(placeId) {
     try {
+        // Favori durumunu kontrol et
         const response = await fetch(`${API_URL}/profile/favorites`, {
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`
             }
         });
-        
+
         if (!response.ok) {
-            return false;
+            throw new Error('Favori durumu kontrol edilirken bir hata oluştu');
         }
 
         const favorites = await response.json();
-        return favorites.some(fav => fav._id === placeId);
+        const isFavorite = favorites.some(fav => fav._id === placeId);
+        updateFavoriteButton(favoriteBtn, isFavorite);
+
+        // Favori butonuna tıklama olayı ekle
+        favoriteBtn.addEventListener('click', async () => {
+            try {
+                const method = isFavorite ? 'DELETE' : 'POST';
+                const response = await fetch(`${API_URL}/profile/favorites/${placeId}`, {
+                    method,
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('İşlem başarısız');
+                }
+
+                const data = await response.json();
+                showNotification(data.message, 'success');
+                updateFavoriteButton(favoriteBtn, !isFavorite);
+
+            } catch (error) {
+                console.error('Favorite error:', error);
+                showNotification('İşlem sırasında bir hata oluştu', 'error');
+            }
+        });
 
     } catch (error) {
-        console.error('Check favorite error:', error);
-        return false;
+        console.error('Error setting up favorite button:', error);
+        showNotification('Favori durumu kontrol edilirken bir hata oluştu', 'error');
     }
 }
 
@@ -274,12 +267,10 @@ async function checkIfFavorite(placeId) {
 function updateFavoriteButton(button, isFavorite) {
     if (isFavorite) {
         button.classList.add('active');
-        button.querySelector('i').className = 'fas fa-heart';
-        button.querySelector('span').textContent = 'Favorilerden Çıkar';
+        button.innerHTML = '<i class="fas fa-heart"></i> Favorilerden Çıkar';
     } else {
         button.classList.remove('active');
-        button.querySelector('i').className = 'far fa-heart';
-        button.querySelector('span').textContent = 'Favorilere Ekle';
+        button.innerHTML = '<i class="far fa-heart"></i> Favorilere Ekle';
     }
 }
 
