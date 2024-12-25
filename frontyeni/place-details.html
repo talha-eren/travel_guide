@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' http://localhost:5000 http://127.0.0.1:5000 https://cdnjs.cloudflare.com https://upload.wikimedia.org data: blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; font-src 'self' https://cdnjs.cloudflare.com data:; img-src 'self' data: https: blob: http: https:; connect-src 'self' http://localhost:5000 http://127.0.0.1:5000">
+    <title>Mekan Detayı - Gezi Rehberi</title>
+    
+    <!-- CSS Dosyaları -->
+    <link rel="stylesheet" href="assets/css/main.css">
+    <link rel="stylesheet" href="assets/css/modal.css">
+    <link rel="stylesheet" href="assets/css/responsive.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- JavaScript Dosyaları -->
+    <script src="assets/js/main.js" defer></script>
+    <script src="assets/js/components.js" defer></script>
+    <script src="assets/js/auth.js" defer></script>
+    <script src="assets/js/place-details.js" defer></script>
+</head>
+<body>
+    <!-- Include header component -->
+    <div id="header"></div>
+
+    <!-- Mekan Detay İçeriği -->
+    <main class="place-details-page">
+        <div class="container">
+            <!-- Mekan Başlık ve Üst Bilgiler -->
+            <div class="place-header">
+                <div class="place-title">
+                    <h1 id="placeName">Mekan Adı</h1>
+                    <div class="place-meta">
+                        <div class="meta-item">
+                            <i class="fas fa-tag"></i>
+                            <span id="placeCategory">Kategori</span>
+                        </div>
+                        <div class="meta-item">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span id="placeCity">Şehir</span>
+                        </div>
+                        <div class="meta-item rating">
+                            <div class="stars" id="placeRating"></div>
+                            <span class="rating-count">(<span id="placeTotalRatings">0</span> değerlendirme)</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="place-actions">
+                    <button id="favoriteBtn" class="btn-favorite">
+                        <i class="far fa-heart"></i>
+                        <span>Favorilere Ekle</span>
+                    </button>
+                    <button id="shareBtn" class="btn-share">
+                        <i class="fas fa-share-alt"></i>
+                        <span>Paylaş</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Ana İçerik Bölümü -->
+            <div class="place-main-content">
+                <!-- Sol Kolon: Galeri ve Temel Bilgiler -->
+                <div class="left-column">
+                    <!-- Galeri -->
+                    <div class="place-gallery">
+                        <div class="main-image">
+                            <img id="mainImage" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3Crect width='200' height='200' fill='%23f0f0f0'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial' font-size='16' fill='%23999'%3EGörsel Yok%3C/text%3E%3C/svg%3E" alt="Mekan Görseli">
+                        </div>
+                        <div class="thumbnail-list" id="imageGallery"></div>
+                    </div>
+
+                    <!-- Açıklama -->
+                    <section class="info-section description">
+                        <h2>Açıklama</h2>
+                        <p id="placeDescription">Mekan açıklaması buraya gelecek...</p>
+                    </section>
+
+                    <!-- Yorumlar -->
+                    <section class="comments-section">
+                        <h2>Yorumlar ve Değerlendirmeler</h2>
+                        
+                        <!-- Yorum formu (sadece giriş yapmış kullanıcılar için) -->
+                        <div id="commentFormContainer">
+                            <!-- Bu div içeriği JavaScript ile doldurulacak -->
+                        </div>
+                        
+                        <!-- Yorumlar listesi -->
+                        <div class="comments-list" id="commentsList"></div>
+                    </section>
+                </div>
+
+                <!-- Sağ Kolon: Yan Bilgiler -->
+                <div class="right-column">
+                    <!-- Çalışma Saatleri -->
+                    <section class="info-card opening-hours-card">
+                        <h2><i class="far fa-clock"></i> Çalışma Saatleri</h2>
+                        <div class="opening-hours" id="openingHours"></div>
+                    </section>
+
+                    <!-- Konum Bilgisi -->
+                    <section class="info-card location-card">
+                        <h2><i class="fas fa-map-marker-alt"></i> Konum</h2>
+                        <p id="placeAddress">Adres bilgisi buraya gelecek...</p>
+                        <div id="map" class="place-map"></div>
+                    </section>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Include footer component -->
+    <div id="footer"></div>
+
+    <!-- JavaScript Files -->
+    <script src="assets/js/main.js"></script>
+    <script src="assets/js/components.js" defer></script>
+    <script src="assets/js/auth.js" defer></script>
+    <script src="assets/js/place-details.js" defer></script>
+</body>
+</html> 

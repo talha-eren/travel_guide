@@ -1,3 +1,12 @@
+// API URL'yi tanımla
+const API_URL = 'http://localhost:5000/api';
+
+// Auth durumu değiştiğinde event tetikle
+function triggerAuthStateChange() {
+    const event = new Event('authStateChanged');
+    document.dispatchEvent(event);
+}
+
 // Form submit işlemleri
 document.addEventListener('DOMContentLoaded', () => {
     const loginForm = document.getElementById('loginForm');
@@ -33,15 +42,15 @@ document.addEventListener('DOMContentLoaded', () => {
             const loginModal = document.getElementById('loginModal');
             closeModal(loginModal);
 
-            // Başarılı mesajı göster
-            alert('Başarıyla giriş yapıldı!');
+            // Auth durumu değişti event'ini tetikle
+            triggerAuthStateChange();
 
-            // Sayfayı yenile
-            window.location.reload();
+            // Başarılı mesajı göster
+            showNotification('Başarıyla giriş yapıldı!', 'success');
 
         } catch (error) {
             console.error('Login error:', error);
-            alert(error.message);
+            showNotification(error.message, 'error');
         }
     });
 
@@ -49,16 +58,18 @@ document.addEventListener('DOMContentLoaded', () => {
     registerForm?.addEventListener('submit', async (e) => {
         e.preventDefault();
         
-        const fullName = document.getElementById('registerName').value;
-        const email = document.getElementById('registerEmail').value;
-        const password = document.getElementById('registerPassword').value;
-        const passwordConfirm = document.getElementById('registerPasswordConfirm').value;
+        const registerFullName = document.getElementById('registerFullName');
+        const registerEmail = document.getElementById('registerEmail');
+        const registerPassword = document.getElementById('registerPassword');
 
-        // Şifre kontrolü
-        if (password !== passwordConfirm) {
-            alert('Şifreler eşleşmiyor!');
+        if (!registerFullName || !registerEmail || !registerPassword) {
+            showNotification('Form alanları bulunamadı', 'error');
             return;
         }
+
+        const fullName = registerFullName.value;
+        const email = registerEmail.value;
+        const password = registerPassword.value;
 
         try {
             const response = await fetch(`${API_URL}/auth/register`, {
@@ -75,30 +86,40 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error(data.message || 'Kayıt olurken bir hata oluştu');
             }
 
-            // Kayıt başarılı mesajı
-            alert('Kayıt başarılı! Şimdi giriş yapabilirsiniz.');
+            // Token ve kullanıcı bilgilerini kaydet
+            localStorage.setItem('token', data.token);
+            localStorage.setItem('user', JSON.stringify(data.user));
 
-            // Kayıt modalını kapat ve giriş modalını aç
+            // Modalı kapat
             const registerModal = document.getElementById('registerModal');
-            const loginModal = document.getElementById('loginModal');
             closeModal(registerModal);
-            loginModal.style.display = 'flex';
+
+            // UI'ı güncelle
+            updateUIForAuthState();
+
+            // Başarılı mesajı göster
+            showNotification('Başarıyla kayıt oldunuz!', 'success');
 
         } catch (error) {
             console.error('Register error:', error);
-            alert(error.message);
+            showNotification(error.message, 'error');
         }
     });
-});
 
-// Çıkış yapma
-function logout() {
-    // Token ve kullanıcı bilgilerini sil
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    // Ana sayfaya yönlendir
-    window.location.href = './index.html';
-}
+    // Çıkış yapma işlemi
+    const logoutBtn = document.getElementById('logoutBtn');
+    logoutBtn?.addEventListener('click', () => {
+        // Token ve kullanıcı bilgilerini sil
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+
+        // Auth durumu değişti event'ini tetikle
+        triggerAuthStateChange();
+
+        // Ana sayfaya yönlendir
+        window.location.href = 'index.html';
+    });
+});
 
 // Menüyü güncelle
 function updateMenu() {
@@ -132,13 +153,4 @@ function getInitials(name) {
         .map(word => word[0])
         .join('')
         .toUpperCase();
-}
-
-// Çıkış butonu için event listener
-const logoutButton = document.querySelector('#logoutBtn');
-if (logoutButton) {
-    logoutButton.addEventListener('click', (e) => {
-        e.preventDefault();
-        logout();
-    });
 }

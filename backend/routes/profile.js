@@ -1,101 +1,135 @@
-const router = require('express').Router();
+const express = require('express');
+const router = express.Router();
+const auth = require('../middleware/auth');
 const User = require('../models/User');
-const jwt = require('jsonwebtoken');
-
-// Auth middleware
-const authMiddleware = async (req, res, next) => {
-    try {
-        // Token'ı header'dan al
-        const token = req.header('Authorization')?.replace('Bearer ', '');
-        if (!token) {
-            return res.status(401).json({ message: 'Yetkilendirme hatası' });
-        }
-
-        // Token'ı doğrula
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        
-        // Kullanıcıyı bul
-        const user = await User.findById(decoded.userId);
-        if (!user) {
-            return res.status(404).json({ message: 'Kullanıcı bulunamadı' });
-        }
-
-        // Kullanıcıyı request'e ekle
-        req.user = user;
-        next();
-    } catch (error) {
-        res.status(401).json({ message: 'Yetkilendirme hatası', error: error.message });
-    }
-};
-
-// Profil bilgilerini getir
-router.get('/me', authMiddleware, async (req, res) => {
-    try {
-        // Şifreyi hariç tut
-        const user = req.user.toObject();
-        delete user.password;
-        
-        res.json({
-            message: 'Profil bilgileri başarıyla getirildi',
-            user
-        });
-    } catch (error) {
-        res.status(500).json({ message: 'Sunucu hatası', error: error.message });
-    }
-});
+const Place = require('../models/Place');
+const Comment = require('../models/Comment');
 
 // Profil bilgilerini güncelle
-router.put('/update', authMiddleware, async (req, res) => {
+router.put('/update', auth, async (req, res) => {
     try {
         const { fullName, email } = req.body;
-        const user = req.user;
 
-        // Email değişmişse, yeni email'in kullanılıp kullanılmadığını kontrol et
-        if (email !== user.email) {
-            const existingUser = await User.findOne({ email });
+        // Email kontrolü
+        if (email) {
+            const existingUser = await User.findOne({ email, _id: { $ne: req.user.id } });
             if (existingUser) {
-                return res.status(400).json({ message: 'Bu email adresi zaten kullanılıyor.' });
+                return res.status(400).json({ message: 'Bu email adresi başka bir kullanıcı tarafından kullanılıyor.' });
             }
-            user.email = email;
         }
 
-        user.fullName = fullName;
+        // Kullanıcıyı güncelle
+        const user = await User.findById(req.user.id);
+        if (fullName) user.fullName = fullName;
+        if (email) user.email = email;
         await user.save();
 
-        // Şifreyi hariç tut
-        const updatedUser = user.toObject();
-        delete updatedUser.password;
-
         res.json({
-            message: 'Profil bilgileri başarıyla güncellendi',
-            user: updatedUser
+            message: 'Profil başarıyla güncellendi',
+            user: {
+                id: user._id,
+                fullName: user.fullName,
+                email: user.email
+            }
         });
     } catch (error) {
-        res.status(500).json({ message: 'Sunucu hatası', error: error.message });
+        console.error('Error updating profile:', error);
+        res.status(500).json({ message: 'Profil güncellenirken bir hata oluştu' });
     }
 });
 
-// Şifre değiştirme
-router.put('/change-password', authMiddleware, async (req, res) => {
+// Şifre değiştir
+router.put('/change-password', auth, async (req, res) => {
     try {
         const { currentPassword, newPassword } = req.body;
-        const user = req.user;
 
+        // Kullanıcıyı bul
+        const user = await User.findById(req.user.id);
+        
         // Mevcut şifreyi kontrol et
         const isMatch = await user.comparePassword(currentPassword);
         if (!isMatch) {
-            return res.status(400).json({ message: 'Mevcut şifre yanlış.' });
+            return res.status(400).json({ message: 'Mevcut şifre hatalı.' });
         }
 
         // Yeni şifreyi kaydet
         user.password = newPassword;
         await user.save();
 
-        res.json({
-            message: 'Şifre başarıyla değiştirildi'
-        });
+        res.json({ message: 'Şifre başarıyla değiştirildi' });
     } catch (error) {
-        res.status(500).json({ message: 'Sunucu hatası', error: error.message });
+        console.error('Error changing password:', error);
+        res.status(500).json({ message: 'Şifre değiştirilirken bir hata oluştu' });
+    }
+});
+
+// Favori mekanları getir
+router.get('/favorites', auth, async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id).populate('favorites');
+        res.json(user.favorites);
+    } catch (error) {
+        console.error('Error fetching favorites:', error);
+        res.status(500).json({ message: 'Favoriler getirilirken bir hata oluştu' });
+    }
+});
+
+// Favorilere mekan ekle
+router.post('/favorites/:placeId', auth, async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id);
+        if (!user.favorites.includes(req.params.placeId)) {
+            user.favorites.push(req.params.placeId);
+            await user.save();
+        }
+        res.json({ message: 'Mekan favorilere eklendi' });
+    } catch (error) {
+        console.error('Error adding to favorites:', error);
+        res.status(500).json({ message: 'Favorilere eklenirken bir hata oluştu' });
+    }
+});
+
+// Favorilerden mekan çıkar
+router.delete('/favorites/:placeId', auth, async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id);
+        user.favorites = user.favorites.filter(id => id.toString() !== req.params.placeId);
+        await user.save();
+        res.json({ message: 'Mekan favorilerden çıkarıldı' });
+    } catch (error) {
+        console.error('Error removing from favorites:', error);
+        res.status(500).json({ message: 'Favorilerden çıkarılırken bir hata oluştu' });
+    }
+});
+
+// Kullanıcının yorumlarını getir
+router.get('/comments', auth, async (req, res) => {
+    try {
+        const comments = await Comment.find({ user: req.user.id })
+            .populate({
+                path: 'place',
+                select: 'name city category _id'
+            })
+            .sort({ createdAt: -1 });
+
+        // Yorumları düzenle
+        const formattedComments = comments.map(comment => ({
+            _id: comment._id,
+            text: comment.text,
+            rating: comment.rating,
+            createdAt: comment.createdAt,
+            place: {
+                _id: comment.place._id,
+                name: comment.place.name || 'Silinmiş Mekan',
+                city: comment.place.city || 'Belirtilmemiş',
+                category: comment.place.category || 'Belirtilmemiş'
+            }
+        }));
+
+        res.json(formattedComments);
+    } catch (error) {
+        console.error('Error fetching user comments:', error);
+        res.status(500).json({ message: 'Yorumlar getirilirken bir hata oluştu' });
     }
 });
 

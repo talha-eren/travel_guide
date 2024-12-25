@@ -2,31 +2,16 @@
 async function getProfile() {
     try {
         const token = localStorage.getItem('token');
-        if (!token) {
+        const user = JSON.parse(localStorage.getItem('user'));
+        
+        if (!token || !user) {
             window.location.href = 'index.html';
             return;
         }
 
-        console.log('Token:', token); // Debug için
-
-        const response = await fetch(`${API_URL}/profile/me`, {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        });
-
-        console.log('Response:', response); // Debug için
-
-        const data = await response.json();
-        console.log('Data:', data); // Debug için
-
-        if (!response.ok) {
-            throw new Error(data.message || 'Profil bilgileri alınamadı');
-        }
-
         // Form alanlarını doldur
-        document.getElementById('fullName').value = data.user.fullName;
-        document.getElementById('email').value = data.user.email;
+        document.getElementById('fullName').value = user.fullName;
+        document.getElementById('email').value = user.email;
 
         // Avatar ve isim güncelle
         const avatarText = document.querySelector('.avatar-text');
@@ -34,18 +19,18 @@ async function getProfile() {
         const profileEmail = document.querySelector('.profile-email');
 
         if (avatarText) {
-            avatarText.textContent = getInitials(data.user.fullName);
+            avatarText.textContent = getInitials(user.fullName);
         }
         if (profileName) {
-            profileName.textContent = data.user.fullName;
+            profileName.textContent = user.fullName;
         }
         if (profileEmail) {
-            profileEmail.textContent = data.user.email;
+            profileEmail.textContent = user.email;
         }
 
     } catch (error) {
         console.error('Profil bilgileri alınırken hata:', error);
-        alert(error.message);
+        showNotification(error.message, 'error');
     }
 }
 
@@ -82,14 +67,14 @@ async function updateProfile(event) {
         localStorage.setItem('user', JSON.stringify(data.user));
 
         // Başarı mesajı göster
-        alert('Profil bilgileri başarıyla güncellendi');
+        showNotification('Profil bilgileri başarıyla güncellendi', 'success');
 
         // Sayfayı yenile
         window.location.reload();
 
     } catch (error) {
         console.error('Profil güncellenirken hata:', error);
-        alert(error.message);
+        showNotification(error.message, 'error');
     }
 }
 
@@ -104,12 +89,12 @@ async function changePassword(event) {
             return;
         }
 
-    const currentPassword = document.getElementById('currentPassword').value;
-    const newPassword = document.getElementById('newPassword').value;
-    const confirmPassword = document.getElementById('confirmPassword').value;
+        const currentPassword = document.getElementById('currentPassword').value;
+        const newPassword = document.getElementById('newPassword').value;
+        const confirmPassword = document.getElementById('confirmPassword').value;
 
-    // Şifre kontrolü
-    if (newPassword !== confirmPassword) {
+        // Şifre kontrolü
+        if (newPassword !== confirmPassword) {
             throw new Error('Yeni şifreler eşleşmiyor');
         }
 
@@ -133,14 +118,14 @@ async function changePassword(event) {
         }
 
         // Başarı mesajı göster
-        alert('Şifre başarıyla değiştirildi');
+        showNotification('Şifre başarıyla değiştirildi', 'success');
 
         // Formu temizle
         document.getElementById('passwordForm').reset();
 
     } catch (error) {
         console.error('Şifre değiştirme hatası:', error);
-        alert(error.message);
+        showNotification(error.message, 'error');
     }
 }
 
@@ -157,7 +142,7 @@ function getInitials(name) {
 function switchTab(tabId) {
     // Tüm sekmeleri gizle
     document.querySelectorAll('.profile-section').forEach(section => {
-                    section.classList.remove('active');
+        section.classList.remove('active');
     });
 
     // Tüm tab butonlarını pasif yap
@@ -185,6 +170,68 @@ function checkAuth() {
     return token && user;
 }
 
+// Kullanıcının yorumlarını getir ve göster
+async function loadUserComments() {
+    try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = 'index.html';
+            return;
+        }
+
+        const response = await fetch(`${API_URL}/profile/comments`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        const comments = await response.json();
+
+        if (!response.ok) {
+            throw new Error(comments.message || 'Yorumlar getirilirken bir hata oluştu');
+        }
+
+        const commentsList = document.querySelector('#comments .comments-list');
+        if (!commentsList) return;
+
+        if (comments.length === 0) {
+            commentsList.innerHTML = `
+                <div class="no-comments">
+                    <i class="fas fa-comments"></i>
+                    <p>Henüz yorum yapmamışsınız.</p>
+                </div>
+            `;
+            return;
+        }
+
+        commentsList.innerHTML = comments.map(comment => `
+            <div class="comment-card">
+                <div class="comment-header">
+                    <h3>${comment.place.name}</h3>
+                    <div class="rating">
+                        ${getStarRating(comment.rating)}
+                    </div>
+                </div>
+                <div class="comment-meta">
+                    <span><i class="fas fa-map-marker-alt"></i> ${comment.place.city}</span>
+                    <span><i class="fas fa-tag"></i> ${comment.place.category}</span>
+                    <span><i class="fas fa-clock"></i> ${formatDate(comment.createdAt)}</span>
+                </div>
+                <p class="comment-text">${comment.text}</p>
+                <div class="comment-actions">
+                    <a href="place-details.html?id=${comment.place._id}" class="btn-link">
+                        <i class="fas fa-external-link-alt"></i> Mekana Git
+                    </a>
+                </div>
+            </div>
+        `).join('');
+
+    } catch (error) {
+        console.error('Error loading user comments:', error);
+        showNotification(error.message, 'error');
+    }
+}
+
 // Tab içeriğini yükle
 async function loadTabContent(tabId) {
     // Önce tab'ı aktif et
@@ -199,11 +246,20 @@ async function loadTabContent(tabId) {
             // Favorileri yükle
             break;
         case 'comments':
-            // Yorumları yükle
+            await loadUserComments();
             break;
         case 'security':
             // Güvenlik sekmesi için özel bir işlem gerekmez
             break;
+    }
+}
+
+// Sayfa yüklendiğinde
+document.addEventListener('DOMContentLoaded', async function() {
+    // Auth kontrolü
+    if (!checkAuth()) {
+        window.location.href = 'index.html';
+        return;
     }
 
     // Form event listener'larını ekle
@@ -237,39 +293,9 @@ async function loadTabContent(tabId) {
             }
         });
     }
-}
 
-// Sayfa yüklendiğinde auth kontrolü yap
-document.addEventListener('DOMContentLoaded', async function() {
-    // Auth kontrolü
-    if (!checkAuth()) {
-        window.location.href = './index.html';
-        return;
-    }
-
-    try {
-        // Header ve footer'ı yükle
-        await loadComponent('header', 'components/header.html');
-        await loadComponent('footer', 'components/footer.html');
-        
-        // UI'ı güncelle
-        updateUIForAuthState();
-
-        // Auth durumunu periyodik olarak kontrol et
-        setInterval(() => {
-            if (!checkAuth()) {
-                window.location.href = './index.html';
-            }
-        }, 5000); // Her 5 saniyede bir kontrol et
-        
-        // Aktif tab'ı belirle
-        const urlParams = new URLSearchParams(window.location.search);
-        const activeTab = urlParams.get('tab') || 'profile';
-        
-        // İlgili içeriği yükle
-        loadTabContent(activeTab);
-    } catch (error) {
-        console.error('Error loading profile:', error);
-        window.location.href = './index.html';
-    }
+    // İlk yüklemede aktif tab'ı belirle
+    const urlParams = new URLSearchParams(window.location.search);
+    const activeTab = urlParams.get('tab') || 'profile';
+    await loadTabContent(activeTab);
 }); 

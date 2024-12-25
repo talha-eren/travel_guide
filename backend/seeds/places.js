@@ -1,17 +1,17 @@
 const mongoose = require('mongoose');
 const Place = require('../models/Place');
-require('dotenv').config();
 
 const places = [
     {
         name: "Ayasofya Camii",
-        description: "İstanbul'un en önemli tarihi yapılarından biri olan Ayasofya, hem müze hem de cami olarak hizmet vermiştir.",
+        description: "Bizans İmparatorluğu'nun en önemli kilisesi olan, Osmanlı döneminde camiye çevrilen ve günümüzde de cami olarak hizmet veren tarihi yapı.",
         city: "İstanbul",
-        address: "Sultan Ahmet, Ayasofya Meydanı No:1",
+        address: "Sultan Ahmet Mahallesi, Ayasofya Meydanı No:1",
         category: "Tarihi",
         images: [
-            "https://example.com/ayasofya1.jpg",
-            "https://example.com/ayasofya2.jpg"
+            "https://upload.wikimedia.org/wikipedia/commons/2/22/Hagia_Sophia_Mars_2013.jpg",
+            "https://upload.wikimedia.org/wikipedia/commons/e/e7/Hagia_Sophia_interior_2.jpg",
+            "https://upload.wikimedia.org/wikipedia/commons/1/1f/Hagia_Sophia_Interior_2007.jpg"
         ],
         rating: 4.8,
         totalRatings: 1250,
@@ -20,24 +20,26 @@ const places = [
             longitude: 28.980175
         },
         openingHours: {
-            monday: { open: "09:00", close: "17:00" },
-            tuesday: { open: "09:00", close: "17:00" },
-            wednesday: { open: "09:00", close: "17:00" },
-            thursday: { open: "09:00", close: "17:00" },
-            friday: { open: "09:00", close: "17:00" },
-            saturday: { open: "09:00", close: "17:00" },
-            sunday: { open: "09:00", close: "17:00" }
-        }
+            monday: "24 saat açık",
+            tuesday: "24 saat açık",
+            wednesday: "24 saat açık",
+            thursday: "24 saat açık",
+            friday: "24 saat açık",
+            saturday: "24 saat açık",
+            sunday: "24 saat açık"
+        },
+        isActive: true
     },
     {
         name: "Topkapı Sarayı",
-        description: "Osmanlı İmparatorluğu'nun 400 yıl boyunca yönetim merkezi olan saray müzesi.",
+        description: "Osmanlı İmparatorluğu'nun 400 yılı aşkın süre boyunca yönetim merkezi olan muhteşem saray kompleksi.",
         city: "İstanbul",
-        address: "Cankurtaran, Topkapı Sarayı",
+        address: "Cankurtaran Mahallesi, Topkapı Sarayı",
         category: "Tarihi",
         images: [
-            "https://example.com/topkapi1.jpg",
-            "https://example.com/topkapi2.jpg"
+            "https://upload.wikimedia.org/wikipedia/commons/8/8d/Topkapi_Palace_Istanbul_2007.jpg",
+            "https://upload.wikimedia.org/wikipedia/commons/4/4b/Istanbul_-_Palazzo_Topkapi_-_Terza_corte_-_Biblioteca_di_Ahmet_III_-_Foto_G._Dall%27Orto_27-5-2006.jpg",
+            "https://upload.wikimedia.org/wikipedia/commons/2/2a/Topkapi_Palace_Harem_Istanbul_2007_001.jpg"
         ],
         rating: 4.7,
         totalRatings: 980,
@@ -46,65 +48,72 @@ const places = [
             longitude: 28.983333
         },
         openingHours: {
-            monday: { open: "09:00", close: "17:00" },
-            tuesday: { open: "09:00", close: "17:00" },
-            wednesday: { open: "09:00", close: "17:00" },
-            thursday: { open: "09:00", close: "17:00" },
-            friday: { open: "09:00", close: "17:00" },
-            saturday: { open: "09:00", close: "17:00" },
-            sunday: { open: "09:00", close: "17:00" }
-        }
+            monday: "Kapalı",
+            tuesday: "09:00-17:00",
+            wednesday: "09:00-17:00",
+            thursday: "09:00-17:00",
+            friday: "09:00-17:00",
+            saturday: "09:00-17:00",
+            sunday: "09:00-17:00"
+        },
+        isActive: true
     },
     {
         name: "Kapadokya",
-        description: "Eşsiz peri bacaları ve sıcak hava balonlarıyla ünlü doğal güzellik.",
+        description: "Peri bacaları, yeraltı şehirleri ve sıcak hava balonlarıyla ünlü, eşsiz doğal güzelliklere sahip bölge.",
         city: "Nevşehir",
         address: "Göreme, Nevşehir",
         category: "Doğal",
         images: [
-            "https://example.com/kapadokya1.jpg",
-            "https://example.com/kapadokya2.jpg"
+            "https://upload.wikimedia.org/wikipedia/commons/6/65/Cappadocia_Ballooning.jpg",
+            "https://upload.wikimedia.org/wikipedia/commons/5/5c/Cappadocia_balloons.jpg",
+            "https://upload.wikimedia.org/wikipedia/commons/4/4f/G%C3%B6reme_Cappadocia.jpg"
         ],
         rating: 4.9,
-        totalRatings: 2100,
+        totalRatings: 2150,
         coordinates: {
             latitude: 38.643056,
             longitude: 34.828889
         },
         openingHours: {
-            monday: { open: "00:00", close: "23:59" },
-            tuesday: { open: "00:00", close: "23:59" },
-            wednesday: { open: "00:00", close: "23:59" },
-            thursday: { open: "00:00", close: "23:59" },
-            friday: { open: "00:00", close: "23:59" },
-            saturday: { open: "00:00", close: "23:59" },
-            sunday: { open: "00:00", close: "23:59" }
-        }
+            monday: "24 saat açık",
+            tuesday: "24 saat açık",
+            wednesday: "24 saat açık",
+            thursday: "24 saat açık",
+            friday: "24 saat açık",
+            saturday: "24 saat açık",
+            sunday: "24 saat açık"
+        },
+        isActive: true
     }
 ];
 
 async function seedPlaces() {
     try {
-        // MongoDB'ye bağlan
-        await mongoose.connect(process.env.MONGODB_URI);
-        console.log('MongoDB bağlantısı başarılı');
-
         // Mevcut mekanları temizle
         await Place.deleteMany({});
-        console.log('Mevcut mekanlar temizlendi');
-
+        
         // Yeni mekanları ekle
         await Place.insertMany(places);
-        console.log('Örnek mekanlar eklendi');
-
-        // Bağlantıyı kapat
-        await mongoose.connection.close();
-        console.log('MongoDB bağlantısı kapatıldı');
+        
+        console.log('Mekanlar başarıyla eklendi!');
+        process.exit(0);
     } catch (error) {
-        console.error('Hata:', error);
+        console.error('Mekan eklenirken hata oluştu:', error);
         process.exit(1);
     }
 }
 
-// Seed işlemini başlat
-seedPlaces(); 
+// MongoDB bağlantısı
+mongoose.connect('mongodb://localhost:27017/travel_guide', {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+})
+.then(() => {
+    console.log('MongoDB bağlantısı başarılı');
+    seedPlaces();
+})
+.catch((error) => {
+    console.error('MongoDB bağlantı hatası:', error);
+    process.exit(1);
+}); 

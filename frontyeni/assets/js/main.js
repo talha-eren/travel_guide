@@ -1,5 +1,67 @@
-// API URL
-const API_URL = 'http://localhost:5000/api';
+// API URL'yi tanımla
+window.API_URL = 'http://localhost:5000/api';
+
+// Notification sistemi
+function showNotification(message, type = 'info') {
+    // Varsa eski notification'ı kaldır
+    const existingNotification = document.querySelector('.notification');
+    if (existingNotification) {
+        existingNotification.remove();
+    }
+
+    // Yeni notification oluştur
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.textContent = message;
+
+    // Body'nin en üstüne ekle
+    document.body.insertBefore(notification, document.body.firstChild);
+
+    // 3 saniye sonra kaldır
+    setTimeout(() => {
+        notification.remove();
+    }, 3000);
+}
+
+// Yıldız derecelendirme fonksiyonu
+function getStarRating(rating) {
+    const fullStar = '<i class="fas fa-star"></i>';
+    const halfStar = '<i class="fas fa-star-half-alt"></i>';
+    const emptyStar = '<i class="far fa-star"></i>';
+    
+    const stars = [];
+    const fullStars = Math.floor(rating);
+    const hasHalfStar = rating % 1 >= 0.5;
+    
+    for (let i = 0; i < 5; i++) {
+        if (i < fullStars) {
+            stars.push(fullStar);
+        } else if (i === fullStars && hasHalfStar) {
+            stars.push(halfStar);
+        } else {
+            stars.push(emptyStar);
+        }
+    }
+    
+    return stars.join('');
+}
+
+// Tarih formatı fonksiyonu
+function formatDate(dateString) {
+    const options = { 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    };
+    return new Date(dateString).toLocaleDateString('tr-TR', options);
+}
+
+// Auth kontrolü
+function checkAuth() {
+    return !!localStorage.getItem('token');
+}
 
 // Load components
 async function loadComponent(elementId, componentPath) {
@@ -65,110 +127,65 @@ function initSmoothScroll() {
 }
 
 // Modal işlemleri
+function openModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+function closeModal(modal) {
+    if (modal) {
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+    }
+}
+
+// Modal'ları başlat
 function initModals() {
-    const loginModal = document.getElementById('loginModal');
-    const registerModal = document.getElementById('registerModal');
-    const loginBtn = document.getElementById('loginBtn');
-    const registerBtn = document.getElementById('registerBtn');
-    const closeBtns = document.querySelectorAll('.close');
-    const switchToRegister = document.getElementById('switchToRegister');
-    const switchToLogin = document.getElementById('switchToLogin');
-
-    // Modal açma işlevleri
-    loginBtn?.addEventListener('click', (e) => {
-        e.preventDefault();
-        if (loginModal) {
-            loginModal.style.display = 'flex';
-            document.body.style.overflow = 'hidden';
-        }
-    });
-
-    registerBtn?.addEventListener('click', (e) => {
-        e.preventDefault();
-        if (registerModal) {
-            registerModal.style.display = 'flex';
-            document.body.style.overflow = 'hidden';
-        }
-    });
-
-    // Modal geçişleri
-    switchToRegister?.addEventListener('click', (e) => {
-        e.preventDefault();
-        closeModal(loginModal);
-        if (registerModal) {
-            registerModal.style.display = 'flex';
-            document.body.style.overflow = 'hidden';
-        }
-    });
-
-    switchToLogin?.addEventListener('click', (e) => {
-        e.preventDefault();
-        closeModal(registerModal);
-        if (loginModal) {
-            loginModal.style.display = 'flex';
-            document.body.style.overflow = 'hidden';
-        }
-    });
-
-    // X butonuyla kapatma
-    closeBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            closeModal(loginModal);
-            closeModal(registerModal);
+    // Modal'ları kapat
+    document.querySelectorAll('.modal').forEach(modal => {
+        // Dışarı tıklandığında kapat
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                closeModal(modal);
+            }
         });
-    });
 
-    // Dışarı tıklayarak kapatma
-    window.addEventListener('click', (e) => {
-        if (e.target === loginModal || e.target === registerModal) {
-            closeModal(loginModal);
-            closeModal(registerModal);
-        }
-    });
-
-    // ESC tuşu ile kapatma
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') {
-            closeModal(loginModal);
-            closeModal(registerModal);
+        // Kapatma butonuna tıklandığında kapat
+        const closeBtn = modal.querySelector('.close-btn');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => closeModal(modal));
         }
     });
 }
 
 // UI'ı auth durumuna göre güncelle
 function updateUIForAuthState() {
-    const user = JSON.parse(localStorage.getItem('user'));
-    const token = localStorage.getItem('token');
-    
+    const isLoggedIn = checkAuth();
+    const guestMenu = document.querySelector('.guest-menu');
+    const userMenu = document.querySelector('.user-menu');
     const loginBtn = document.getElementById('loginBtn');
     const registerBtn = document.getElementById('registerBtn');
-    const userMenu = document.querySelector('.user-menu');
     
-    if (token && user) {
-        // Giriş yapmış kullanıcı UI'ı
+    if (isLoggedIn) {
+        if (guestMenu) guestMenu.style.display = 'none';
+        if (userMenu) userMenu.style.display = 'flex';
         if (loginBtn) loginBtn.style.display = 'none';
         if (registerBtn) registerBtn.style.display = 'none';
-        if (userMenu) {
-            userMenu.style.display = 'flex';
-            const avatarText = userMenu.querySelector('.avatar-text');
-            const userName = userMenu.querySelector('.user-name');
-            if (avatarText) avatarText.textContent = getInitials(user.fullName);
-            if (userName) userName.textContent = user.fullName;
-        }
+        
+        // Kullanıcı bilgilerini güncelle
+        const user = JSON.parse(localStorage.getItem('user'));
+        const userNameElement = document.querySelector('.user-name');
+        const avatarText = document.querySelector('.avatar-text');
+        if (user && userNameElement) userNameElement.textContent = user.fullName;
+        if (user && avatarText) avatarText.textContent = getInitials(user.fullName);
     } else {
-        // Giriş yapmamış kullanıcı UI'ı
+        if (guestMenu) guestMenu.style.display = 'flex';
+        if (userMenu) userMenu.style.display = 'none';
         if (loginBtn) loginBtn.style.display = 'block';
         if (registerBtn) registerBtn.style.display = 'block';
-        if (userMenu) userMenu.style.display = 'none';
-    }
-}
-
-// Modal kapatma yardımcı fonksiyonu
-function closeModal(modal) {
-    if (modal) {
-        modal.style.display = 'none';
-        document.body.style.overflow = '';
-        document.body.style.paddingRight = '';
     }
 }
 
@@ -181,13 +198,6 @@ function getInitials(name) {
         .toUpperCase();
 }
 
-// Auth kontrolü
-function checkAuth() {
-    const token = localStorage.getItem('token');
-    const user = localStorage.getItem('user');
-    return token && user;
-}
-
 // Korumalı sayfalara yönlendirme kontrolü
 function handleProtectedRoute(e) {
     const link = e.target.closest('a');
@@ -196,7 +206,7 @@ function handleProtectedRoute(e) {
     const href = link.getAttribute('href');
     if (!href) return true;
 
-    // Sadece profil sayfası için kontrol yap
+    // Profil sayfası için auth kontrolü
     if (href.includes('profile.html')) {
         if (!checkAuth()) {
             e.preventDefault();
@@ -209,7 +219,6 @@ function handleProtectedRoute(e) {
         }
     }
 
-    // Diğer tüm sayfalara serbest erişim
     return true;
 }
 
@@ -220,31 +229,27 @@ document.addEventListener('DOMContentLoaded', async function() {
         await loadComponent('header', 'components/header.html');
         await loadComponent('footer', 'components/footer.html');
         
-        // Profil sayfasında olup olmadığımızı kontrol et
-        const isProfilePage = window.location.pathname.includes('profile.html');
+        // Auth durumunu kontrol et
         const isLoggedIn = checkAuth();
+        const currentPath = window.location.pathname;
         
-        // Sadece profil sayfası için auth kontrolü yap
-        if (isProfilePage && !isLoggedIn) {
-            window.location.href = './index.html';
+        // Eğer ana sayfadaysak ve giriş yapılmamışsa, giriş sayfasını göster
+        if (currentPath.endsWith('/') || currentPath.endsWith('index.html')) {
+            // Modal ve auth işlemlerini başlat
+            initModals();
+            
+            // UI'ı güncelle
+            updateUIForAuthState();
+            
+            // Smooth scroll'u başlat
+            initSmoothScroll();
+        }
+        // Eğer profil sayfasındaysak ve giriş yapılmamışsa, ana sayfaya yönlendir
+        else if (currentPath.includes('profile.html') && !isLoggedIn) {
+            window.location.href = 'index.html';
             return;
         }
-        
-        // Modal ve auth işlemlerini başlat
-        initModals();
-        updateUIForAuthState();
-        
-        // Smooth scroll'u başlat
-        initSmoothScroll();
 
-        // Korumalı sayfa linklerini dinle
-        document.addEventListener('click', (e) => {
-            const link = e.target.closest('a');
-            if (link) {
-                handleProtectedRoute(e);
-            }
-        });
-        
         // Global click event listener
         document.addEventListener('click', async (e) => {
             // Çıkış butonu
@@ -254,8 +259,10 @@ document.addEventListener('DOMContentLoaded', async function() {
                 // Token ve kullanıcı bilgilerini sil
                 localStorage.removeItem('token');
                 localStorage.removeItem('user');
+                // UI'ı güncelle
+                updateUIForAuthState();
                 // Ana sayfaya yönlendir
-                window.location.href = './index.html';
+                window.location.href = 'index.html';
                 return;
             }
 
@@ -282,57 +289,14 @@ document.addEventListener('DOMContentLoaded', async function() {
                 }
                 return;
             }
-
-            // Modal geçiş butonları
-            const switchToRegister = e.target.closest('#switchToRegister');
-            if (switchToRegister) {
-                e.preventDefault();
-                const loginModal = document.getElementById('loginModal');
-                const registerModal = document.getElementById('registerModal');
-                closeModal(loginModal);
-                if (registerModal) {
-                    registerModal.style.display = 'flex';
-                    document.body.style.overflow = 'hidden';
-                }
-                return;
-            }
-
-            const switchToLogin = e.target.closest('#switchToLogin');
-            if (switchToLogin) {
-                e.preventDefault();
-                const registerModal = document.getElementById('registerModal');
-                const loginModal = document.getElementById('loginModal');
-                closeModal(registerModal);
-                if (loginModal) {
-                    loginModal.style.display = 'flex';
-                    document.body.style.overflow = 'hidden';
-                }
-                return;
-            }
-
-            // Modal kapatma butonları
-            const closeBtn = e.target.closest('.close');
-            if (closeBtn) {
-                const modal = closeBtn.closest('.modal');
-                closeModal(modal);
-                return;
-            }
-
-            // Modal dışına tıklama
-            if (e.target.classList.contains('modal')) {
-                closeModal(e.target);
-            }
         });
-
-        // ESC tuşu ile modal kapatma
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
-                const modals = document.querySelectorAll('.modal');
-                modals.forEach(modal => closeModal(modal));
-            }
-        });
-
     } catch (error) {
         console.error('Error initializing components:', error);
     }
-}); 
+});
+
+// Export functions
+window.showNotification = showNotification;
+window.openModal = openModal;
+window.closeModal = closeModal;
+window.checkAuth = checkAuth; 

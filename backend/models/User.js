@@ -4,29 +4,31 @@ const bcrypt = require('bcryptjs');
 const userSchema = new mongoose.Schema({
     fullName: {
         type: String,
-        required: true
+        required: true,
+        trim: true
     },
     email: {
         type: String,
         required: true,
         unique: true,
+        trim: true,
         lowercase: true
     },
     password: {
         type: String,
         required: true
     },
-    isVerified: {
-        type: Boolean,
-        default: false
-    },
+    favorites: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Place'
+    }],
     createdAt: {
         type: Date,
         default: Date.now
     }
 });
 
-// Şifreyi hashleme
+// Şifre hashleme
 userSchema.pre('save', async function(next) {
     if (!this.isModified('password')) return next();
     
@@ -39,7 +41,7 @@ userSchema.pre('save', async function(next) {
     }
 });
 
-// Şifre kontrolü
+// Şifre karşılaştırma
 userSchema.methods.comparePassword = async function(candidatePassword) {
     try {
         return await bcrypt.compare(candidatePassword, this.password);

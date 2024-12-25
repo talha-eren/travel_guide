@@ -1,4 +1,4 @@
-// Değişkenler
+// Global state
 let currentPage = 1;
 let totalPages = 1;
 let currentFilters = {
@@ -7,188 +7,243 @@ let currentFilters = {
     search: ''
 };
 
-// Mekanları getir
-async function getPlaces() {
+// Sayfa yüklendiğinde
+document.addEventListener('DOMContentLoaded', async () => {
     try {
-        const queryParams = new URLSearchParams({
-            page: currentPage,
-            limit: 12,
-            ...currentFilters
+        // Şehirleri yükle
+        await loadCities();
+        
+        // Mekanları yükle
+        await fetchPlaces();
+
+        // Filter form submit
+        const filterForm = document.getElementById('filterForm');
+        filterForm?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            currentPage = 1;
+            await fetchPlaces();
         });
 
-        console.log('Fetching places with params:', queryParams.toString()); // Debug için log
+        // Kategori değişikliği
+        const categoryFilter = document.getElementById('categoryFilter');
+        categoryFilter?.addEventListener('change', async () => {
+            currentPage = 1;
+            await fetchPlaces();
+        });
 
-        const response = await fetch(`${API_URL}/places?${queryParams}`, {
-            headers: {
-                'Content-Type': 'application/json'
+        // Şehir değişikliği
+        const cityFilter = document.getElementById('cityFilter');
+        cityFilter?.addEventListener('change', async () => {
+            currentPage = 1;
+            await fetchPlaces();
+        });
+
+        // Sayfalama butonları
+        const prevPage = document.getElementById('prevPage');
+        const nextPage = document.getElementById('nextPage');
+
+        prevPage?.addEventListener('click', async () => {
+            if (currentPage > 1) {
+                currentPage--;
+                await fetchPlaces();
             }
         });
 
+        nextPage?.addEventListener('click', async () => {
+            if (currentPage < totalPages) {
+                currentPage++;
+                await fetchPlaces();
+            }
+        });
+    } catch (error) {
+        console.error('Error loading places:', error);
+        const placesList = document.getElementById('placesList');
+        if (placesList) {
+            placesList.innerHTML = `<div class="error-message">
+                <i class="fas fa-exclamation-circle"></i>
+                <p>Mekanlar yüklenirken bir hata oluştu.</p>
+            </div>`;
+        }
+    }
+});
+
+// Şehirleri yükle
+async function loadCities() {
+    try {
+        if (typeof API_URL === 'undefined') {
+            console.error('API_URL is not defined');
+            throw new Error('API bağlantısı kurulamadı');
+        }
+
+        const response = await fetch(`${API_URL}/places/cities`);
         if (!response.ok) {
-            throw new Error('Mekanlar getirilemedi');
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
 
         const data = await response.json();
-        console.log('Response data:', data); // Debug için log
-
-        if (data.places && Array.isArray(data.places)) {
-            displayPlaces(data.places);
-            updatePagination(data.currentPage || 1, data.totalPages || 1);
-        } else {
-            throw new Error('Geçersiz veri formatı');
-        }
         
+        const cityFilter = document.getElementById('cityFilter');
+        if (cityFilter && data.cities) {
+            data.cities.forEach(city => {
+                const option = document.createElement('option');
+                option.value = city;
+                option.textContent = city;
+                cityFilter.appendChild(option);
+            });
+        }
     } catch (error) {
-        console.error('Mekanlar getirilirken hata:', error);
-        // Hata mesajını göster ama alert kullanma
-        const placesGrid = document.getElementById('placesList');
-        if (placesGrid) {
-            placesGrid.innerHTML = '<div class="error-message">Mekanlar yüklenirken bir hata oluştu. Lütfen daha sonra tekrar deneyin.</div>';
+        console.error('Error loading cities:', error);
+    }
+}
+
+// Mekanları getir
+async function fetchPlaces() {
+    try {
+        if (typeof API_URL === 'undefined') {
+            console.error('API_URL is not defined');
+            throw new Error('API bağlantısı kurulamadı');
+        }
+
+        // Filtreleri al
+        const category = document.getElementById('categoryFilter')?.value || '';
+        const city = document.getElementById('cityFilter')?.value || '';
+        const search = document.getElementById('searchInput')?.value || '';
+
+        // URL parametrelerini oluştur
+        const params = new URLSearchParams({
+            page: currentPage,
+            limit: 12
+        });
+
+        if (category) params.append('category', category);
+        if (city) params.append('city', city);
+        if (search) params.append('search', search);
+
+        const url = `${API_URL}/places?${params.toString()}`;
+        console.log('Fetching places from URL:', url);
+
+        // API'den mekanları getir
+        const response = await fetch(url);
+        console.log('Response status:', response.status);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log('Places data:', data);
+
+        // Toplam sayfa sayısını güncelle
+        totalPages = Math.ceil(data.total / 12);
+
+        // Mekanları görüntüle
+        if (!data.places || data.places.length === 0) {
+            const placesList = document.getElementById('placesList');
+            if (placesList) {
+                placesList.innerHTML = `<div class="no-results">
+                    <i class="fas fa-search"></i>
+                    <p>Hiç mekan bulunamadı.</p>
+                </div>`;
+            }
+            return;
+        }
+
+        renderPlaces(data.places);
+        // Sayfalama bilgisini güncelle
+        updatePagination();
+
+    } catch (error) {
+        console.error('Error fetching places:', error);
+        const placesList = document.getElementById('placesList');
+        if (placesList) {
+            placesList.innerHTML = `<div class="error-message">
+                <i class="fas fa-exclamation-circle"></i>
+                <p>Mekanlar yüklenirken bir hata oluştu: ${error.message}</p>
+            </div>`;
         }
     }
 }
 
 // Mekanları görüntüle
-function displayPlaces(places) {
-    const placesGrid = document.getElementById('placesList');
-    placesGrid.innerHTML = '';
+function renderPlaces(places) {
+    const placesList = document.getElementById('placesList');
+    if (!placesList) return;
 
-    places.forEach(place => {
-        const placeCard = createPlaceCard(place);
-        placesGrid.appendChild(placeCard);
-    });
+    if (!places || places.length === 0) {
+        placesList.innerHTML = `<div class="no-results">
+            <i class="fas fa-search"></i>
+            <p>Sonuç bulunamadı.</p>
+        </div>`;
+        return;
+    }
+
+    placesList.innerHTML = places.map(place => createPlaceCard(place)).join('');
 }
 
 // Mekan kartı oluştur
 function createPlaceCard(place) {
-    const card = document.createElement('div');
-    card.className = 'place-card';
+    // Varsayılan resim
+    const defaultImage = 'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'200\' height=\'200\' viewBox=\'0 0 200 200\'%3E%3Crect width=\'200\' height=\'200\' fill=\'%23f0f0f0\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' dominant-baseline=\'middle\' text-anchor=\'middle\' font-family=\'Arial\' font-size=\'16\' fill=\'%23999\'%3EGörsel Yok%3C/text%3E%3C/svg%3E';
     
-    const image = place.images && place.images.length > 0 ? place.images[0] : 'assets/images/placeholder.jpg';
-    
-    card.innerHTML = `
-        <div class="place-image">
-            <img src="${image}" alt="${place.name}">
-            <div class="place-category">${place.category}</div>
-        </div>
-        <div class="place-info">
-            <h3>${place.name}</h3>
-            <p class="place-city"><i class="fas fa-map-marker-alt"></i> ${place.city}</p>
-            <div class="place-rating">
-                <span class="stars">${getStarRating(place.rating)}</span>
-                <span class="rating-count">(${place.totalRatings})</span>
+    // Mekanın ana resmini belirle
+    const mainImage = place.images && place.images.length > 0 
+        ? place.images[0] 
+        : defaultImage;
+
+    return `
+        <div class="place-card">
+            <img src="${mainImage}" alt="${place.name}" 
+                onerror="this.src='${defaultImage}'">
+            <div class="place-info">
+                <h3>${place.name || 'İsimsiz Mekan'}</h3>
+                <div class="place-rating">
+                    ${getStarRating(place.rating || 0)}
+                    <span>(${place.totalRatings || 0} değerlendirme)</span>
+                </div>
+                <div class="place-meta">
+                    <span><i class="fas fa-tag"></i> ${place.category || 'Kategori Belirtilmemiş'}</span>
+                    <span><i class="fas fa-map-marker-alt"></i> ${place.city || 'Şehir Belirtilmemiş'}</span>
+                </div>
+                <p class="place-description">${place.description || 'Açıklama bulunmuyor'}</p>
+                <div class="card-actions">
+                    <a href="place-details.html?id=${place._id}" class="btn btn-primary">
+                        <i class="fas fa-info-circle"></i> Detayları Gör
+                    </a>
+                </div>
             </div>
-            <button onclick="viewPlaceDetails('${place._id}')" class="btn-details">
-                Detayları Gör
-            </button>
         </div>
     `;
-
-    return card;
 }
 
 // Yıldız değerlendirmesi oluştur
 function getStarRating(rating) {
-    const fullStar = '<i class="fas fa-star"></i>';
-    const halfStar = '<i class="fas fa-star-half-alt"></i>';
-    const emptyStar = '<i class="far fa-star"></i>';
-    
-    let stars = '';
     const fullStars = Math.floor(rating);
     const hasHalfStar = rating % 1 >= 0.5;
+    const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
 
-    for (let i = 0; i < fullStars; i++) {
-        stars += fullStar;
-    }
-    
-    if (hasHalfStar) {
-        stars += halfStar;
-    }
-    
-    const remainingStars = 5 - Math.ceil(rating);
-    for (let i = 0; i < remainingStars; i++) {
-        stars += emptyStar;
-    }
-
-    return stars;
+    return `
+        ${Array(fullStars).fill('<i class="fas fa-star"></i>').join('')}
+        ${hasHalfStar ? '<i class="fas fa-star-half-alt"></i>' : ''}
+        ${Array(emptyStars).fill('<i class="far fa-star"></i>').join('')}
+        <span class="rating-number">${rating.toFixed(1)}</span>
+    `;
 }
 
-// Sayfalama güncelle
-function updatePagination(currentPage, totalPages) {
-    document.getElementById('currentPage').textContent = `Sayfa ${currentPage}`;
-    document.getElementById('prevPage').disabled = currentPage === 1;
-    document.getElementById('nextPage').disabled = currentPage === totalPages;
-}
+// Sayfalama bilgisini güncelle
+function updatePagination() {
+    const currentPageSpan = document.getElementById('currentPage');
+    const prevButton = document.getElementById('prevPage');
+    const nextButton = document.getElementById('nextPage');
 
-// Mekan detaylarını görüntüle
-function viewPlaceDetails(placeId) {
-    window.location.href = `place-details.html?id=${placeId}`;
-}
-
-// Şehirleri getir ve filtreye ekle
-async function loadCities() {
-    try {
-        const response = await fetch(`${API_URL}/places`);
-        const data = await response.json();
-
-        const cities = [...new Set(data.places.map(place => place.city))].sort();
-        const cityFilter = document.getElementById('cityFilter');
-        
-        cities.forEach(city => {
-            const option = document.createElement('option');
-            option.value = city;
-            option.textContent = city;
-            cityFilter.appendChild(option);
-        });
-    } catch (error) {
-        console.error('Şehirler yüklenirken hata:', error);
+    if (currentPageSpan) {
+        currentPageSpan.textContent = `Sayfa ${currentPage}`;
     }
-}
 
-// Event Listeners
-document.addEventListener('DOMContentLoaded', () => {
-    // Sayfa yüklendiğinde mekanları getir
-    getPlaces();
-    loadCities();
+    if (prevButton) {
+        prevButton.disabled = currentPage <= 1;
+    }
 
-    // Filtre formunu dinle
-    const filterForm = document.getElementById('filterForm');
-    const searchInput = document.getElementById('searchInput');
-    const categoryFilter = document.getElementById('categoryFilter');
-    const cityFilter = document.getElementById('cityFilter');
-
-    filterForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        currentFilters = {
-            search: searchInput.value.trim(),
-            category: categoryFilter.value,
-            city: cityFilter.value
-        };
-        currentPage = 1;
-        getPlaces();
-    });
-
-    // Filtre değişikliklerini dinle
-    categoryFilter.addEventListener('change', () => {
-        filterForm.dispatchEvent(new Event('submit'));
-    });
-    
-    cityFilter.addEventListener('change', () => {
-        filterForm.dispatchEvent(new Event('submit'));
-    });
-    
-    // Sayfalama
-    document.getElementById('prevPage').addEventListener('click', () => {
-        if (currentPage > 1) {
-            currentPage--;
-            getPlaces();
-        }
-    });
-    
-    document.getElementById('nextPage').addEventListener('click', () => {
-        if (currentPage < totalPages) {
-            currentPage++;
-            getPlaces();
-        }
-    });
-}); 
+    if (nextButton) {
+        nextButton.disabled = currentPage >= totalPages;
+    }
+} 
