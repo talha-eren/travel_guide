@@ -170,65 +170,81 @@ function checkAuth() {
     return token && user;
 }
 
-// Kullanıcının yorumlarını getir ve göster
-async function loadUserComments() {
+// Yorum silme fonksiyonu
+async function deleteComment(commentId) {
     try {
-        const token = localStorage.getItem('token');
-        if (!token) {
-            window.location.href = 'index.html';
-            return;
-        }
-
-        const response = await fetch(`${API_URL}/profile/comments`, {
+        const response = await fetch(`${API_URL}/profile/comments/${commentId}`, {
+            method: 'DELETE',
             headers: {
-                'Authorization': `Bearer ${token}`
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
             }
         });
 
-        const comments = await response.json();
-
         if (!response.ok) {
-            throw new Error(comments.message || 'Yorumlar getirilirken bir hata oluştu');
+            const data = await response.json();
+            throw new Error(data.message || 'Yorum silinirken bir hata oluştu');
         }
 
-        const commentsList = document.querySelector('#comments .comments-list');
-        if (!commentsList) return;
+        // Yorumları yeniden yükle
+        await loadUserComments();
+        showNotification('Yorum başarıyla silindi', 'success');
+    } catch (error) {
+        console.error('Error deleting comment:', error);
+        showNotification(error.message, 'error');
+    }
+}
 
-        if (comments.length === 0) {
-            commentsList.innerHTML = `
-                <div class="no-comments">
-                    <i class="fas fa-comments"></i>
-                    <p>Henüz yorum yapmamışsınız.</p>
-                </div>
-            `;
+// Kullanıcının yorumlarını yükle
+async function loadUserComments() {
+    try {
+        const response = await fetch(`${API_URL}/profile/comments`, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error('Yorumlar yüklenirken bir hata oluştu');
+        }
+
+        const comments = await response.json();
+        const commentsContainer = document.querySelector('.comments-list');
+        
+        if (!comments || comments.length === 0) {
+            commentsContainer.innerHTML = '<p class="no-data">Henüz yorum yapmamışsınız.</p>';
             return;
         }
 
-        commentsList.innerHTML = comments.map(comment => `
+        commentsContainer.innerHTML = comments.map(comment => `
             <div class="comment-card">
-                <div class="comment-header">
-                    <h3>${comment.place.name}</h3>
-                    <div class="rating">
-                        ${getStarRating(comment.rating)}
+                <div class="comment-place">
+                    <div class="place-image">
+                        <img src="${comment.place.image || 'assets/images/placeholder.jpg'}" alt="${comment.place.name}">
+                    </div>
+                    <div class="place-info">
+                        <h3>${comment.place.name}</h3>
+                        <p>${comment.place.city} - ${comment.place.category}</p>
                     </div>
                 </div>
-                <div class="comment-meta">
-                    <span><i class="fas fa-map-marker-alt"></i> ${comment.place.city}</span>
-                    <span><i class="fas fa-tag"></i> ${comment.place.category}</span>
-                    <span><i class="fas fa-clock"></i> ${formatDate(comment.createdAt)}</span>
-                </div>
-                <p class="comment-text">${comment.text}</p>
-                <div class="comment-actions">
-                    <a href="place-details.html?id=${comment.place._id}" class="btn-link">
-                        <i class="fas fa-external-link-alt"></i> Mekana Git
-                    </a>
+                <div class="comment-content">
+                    <div class="comment-rating">
+                        ${getStarRating(comment.rating)}
+                    </div>
+                    <p class="comment-text">${comment.text}</p>
+                    <div class="comment-footer">
+                        <p class="comment-date">${formatDate(comment.createdAt)}</p>
+                        <button onclick="deleteComment('${comment._id}')" class="btn-delete">
+                            <i class="fas fa-trash"></i> Yorumu Sil
+                        </button>
+                    </div>
                 </div>
             </div>
         `).join('');
 
     } catch (error) {
-        console.error('Error loading user comments:', error);
-        showNotification(error.message, 'error');
+        console.error('Error loading comments:', error);
+        document.querySelector('.comments-list').innerHTML = 
+            '<div class="error-message">Yorumlar yüklenirken bir hata oluştu</div>';
     }
 }
 
@@ -298,4 +314,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     const urlParams = new URLSearchParams(window.location.search);
     const activeTab = urlParams.get('tab') || 'profile';
     await loadTabContent(activeTab);
+
+    // Sayfa yüklendiğinde yorumları yükle
+    loadUserComments();
 }); 

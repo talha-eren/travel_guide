@@ -106,30 +106,72 @@ router.delete('/favorites/:placeId', auth, async (req, res) => {
 router.get('/comments', auth, async (req, res) => {
     try {
         const comments = await Comment.find({ user: req.user.id })
-            .populate({
-                path: 'place',
-                select: 'name city category _id'
-            })
+            .populate('place', 'name city category images')
             .sort({ createdAt: -1 });
 
-        // Yorumları düzenle
-        const formattedComments = comments.map(comment => ({
-            _id: comment._id,
-            text: comment.text,
-            rating: comment.rating,
-            createdAt: comment.createdAt,
-            place: {
-                _id: comment.place._id,
-                name: comment.place.name || 'Silinmiş Mekan',
-                city: comment.place.city || 'Belirtilmemiş',
-                category: comment.place.category || 'Belirtilmemiş'
-            }
-        }));
+        const formattedComments = comments
+            .filter(comment => comment.place !== null)
+            .map(comment => ({
+                _id: comment._id,
+                text: comment.text,
+                rating: comment.rating,
+                createdAt: comment.createdAt,
+                place: {
+                    _id: comment.place._id,
+                    name: comment.place.name || 'Silinmiş Mekan',
+                    city: comment.place.city || 'Belirtilmemiş',
+                    category: comment.place.category || 'Belirtilmemiş',
+                    image: comment.place.images?.[0] || null
+                }
+            }));
 
         res.json(formattedComments);
     } catch (error) {
         console.error('Error fetching user comments:', error);
         res.status(500).json({ message: 'Yorumlar getirilirken bir hata oluştu' });
+    }
+});
+
+// Kullanıcının yorumunu sil
+router.delete('/comments/:commentId', auth, async (req, res) => {
+    try {
+        const comment = await Comment.findOne({
+            _id: req.params.commentId,
+            user: req.user.id
+        });
+
+        if (!comment) {
+            return res.status(404).json({ message: 'Yorum bulunamadı' });
+        }
+
+        const placeId = comment.place;
+
+        // Yorumu sil
+        await comment.deleteOne();
+
+        try {
+            // Mekanın ortalama puanını güncelle
+            const place = await Place.findById(placeId);
+            if (place) {
+                const comments = await Comment.find({ place: placeId });
+                if (comments.length > 0) {
+                    const totalRating = comments.reduce((sum, c) => sum + c.rating, 0);
+                    place.rating = Number((totalRating / comments.length).toFixed(1));
+                } else {
+                    place.rating = 0;
+                }
+                place.totalRatings = comments.length;
+                await place.save();
+            }
+        } catch (updateError) {
+            console.error('Error updating place rating:', updateError);
+            // Puan güncelleme hatası yorum silme işlemini etkilemesin
+        }
+
+        res.json({ message: 'Yorum başarıyla silindi' });
+    } catch (error) {
+        console.error('Error deleting comment:', error);
+        res.status(500).json({ message: 'Yorum silinirken bir hata oluştu' });
     }
 });
 
