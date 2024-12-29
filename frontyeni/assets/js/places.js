@@ -76,11 +76,14 @@ async function loadCities() {
         }
 
         const response = await fetch(`${API_URL}/places/cities`);
+        console.log('Cities response:', response);
+        
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
 
         const data = await response.json();
+        console.log('Cities data:', data);
         
         const cityFilter = document.getElementById('cityFilter');
         if (cityFilter && data.cities) {
@@ -93,6 +96,7 @@ async function loadCities() {
         }
     } catch (error) {
         console.error('Error loading cities:', error);
+        showNotification('Şehirler yüklenirken bir hata oluştu', 'error');
     }
 }
 
@@ -186,14 +190,52 @@ function createPlaceCard(place) {
     const defaultImage = 'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'200\' height=\'200\' viewBox=\'0 0 200 200\'%3E%3Crect width=\'200\' height=\'200\' fill=\'%23f0f0f0\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' dominant-baseline=\'middle\' text-anchor=\'middle\' font-family=\'Arial\' font-size=\'16\' fill=\'%23999\'%3EGörsel Yok%3C/text%3E%3C/svg%3E';
     
     // Mekanın ana resmini belirle
-    const mainImage = place.images && place.images.length > 0 
-        ? place.images[0] 
-        : defaultImage;
+    let mainImage = defaultImage;
+
+    // Önce photo alanını kontrol et
+    if (place.photo) {
+        if (Array.isArray(place.photo)) {
+            mainImage = place.photo[0];
+        } else {
+            mainImage = place.photo;
+        }
+    }
+    // Eğer photo yoksa images alanını kontrol et
+    else if (place.images && place.images.length > 0) {
+        mainImage = place.images[0];
+    }
+
+    // Google Maps fotoğraf URL'sini işle
+    if (mainImage && mainImage.includes('maps.googleapis.com/maps/api/place/photo')) {
+        mainImage = `${mainImage}&key=${GOOGLE_MAPS_API_KEY}`;
+    }
+
+    // Tüm fotoğrafları birleştir
+    const allPhotos = [];
+    if (place.photo) {
+        if (Array.isArray(place.photo)) {
+            allPhotos.push(...place.photo.map(url => url.includes('maps.googleapis.com/maps/api/place/photo') ? `${url}&key=${GOOGLE_MAPS_API_KEY}` : url));
+        } else {
+            allPhotos.push(place.photo.includes('maps.googleapis.com/maps/api/place/photo') ? `${place.photo}&key=${GOOGLE_MAPS_API_KEY}` : place.photo);
+        }
+    }
+    if (place.images) {
+        allPhotos.push(...place.images.map(url => url.includes('maps.googleapis.com/maps/api/place/photo') ? `${url}&key=${GOOGLE_MAPS_API_KEY}` : url));
+    }
 
     return `
         <div class="place-card">
-            <img src="${mainImage}" alt="${place.name}" 
-                onerror="this.src='${defaultImage}'">
+            <div class="place-image">
+                <img src="${mainImage}" alt="${place.name}" 
+                    onerror="this.src='${defaultImage}'"
+                    data-photos='${JSON.stringify(allPhotos)}'>
+                ${allPhotos.length > 1 ? `
+                    <div class="photo-count">
+                        <i class="fas fa-images"></i>
+                        ${allPhotos.length} fotoğraf
+                    </div>
+                ` : ''}
+            </div>
             <div class="place-info">
                 <h3>${place.name || 'İsimsiz Mekan'}</h3>
                 <div class="place-rating">

@@ -1,5 +1,51 @@
-// API URL'yi tanımla
-const API_URL = 'http://localhost:5000/api';
+// Modal kapatma fonksiyonu
+function closeModal(modalElement) {
+    if (!modalElement) return;
+    
+    // Önce Bootstrap modal'ı kapatmayı dene
+    try {
+        const modalInstance = bootstrap.Modal.getInstance(modalElement);
+        if (modalInstance) {
+            modalInstance.hide();
+            return;
+        }
+    } catch (error) {
+        console.log('Bootstrap modal not available');
+    }
+
+    // Bootstrap çalışmazsa manuel kapat
+    modalElement.style.display = 'none';
+    modalElement.classList.remove('show');
+    document.body.classList.remove('modal-open');
+    const backdrop = document.querySelector('.modal-backdrop');
+    if (backdrop) {
+        backdrop.remove();
+    }
+}
+
+// Auth işlemleri için gerekli fonksiyonlar
+async function login(email, password) {
+    try {
+        const response = await fetch(`${API_URL}/auth/login`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ email, password })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Giriş yapılırken bir hata oluştu');
+        }
+
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('Login error:', error);
+        throw error;
+    }
+}
 
 // Auth durumu değiştiğinde event tetikle
 function triggerAuthStateChange() {
@@ -20,19 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const password = document.getElementById('loginPassword').value;
 
         try {
-            const response = await fetch(`${API_URL}/auth/login`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ email, password })
-            });
-
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.message || 'Giriş yapılırken bir hata oluştu');
-            }
+            const data = await login(email, password);
 
             // Token ve kullanıcı bilgilerini kaydet
             localStorage.setItem('token', data.token);
@@ -48,6 +82,9 @@ document.addEventListener('DOMContentLoaded', () => {
             // Başarılı mesajı göster
             showNotification('Başarıyla giriş yapıldı!', 'success');
 
+            // Sayfayı yenile
+            window.location.reload();
+
         } catch (error) {
             console.error('Login error:', error);
             showNotification(error.message, 'error');
@@ -61,15 +98,17 @@ document.addEventListener('DOMContentLoaded', () => {
         const registerFullName = document.getElementById('registerFullName');
         const registerEmail = document.getElementById('registerEmail');
         const registerPassword = document.getElementById('registerPassword');
+        const registerPasswordConfirm = document.getElementById('registerPasswordConfirm');
 
-        if (!registerFullName || !registerEmail || !registerPassword) {
+        if (!registerFullName || !registerEmail || !registerPassword || !registerPasswordConfirm) {
             showNotification('Form alanları bulunamadı', 'error');
             return;
         }
 
-        const fullName = registerFullName.value;
-        const email = registerEmail.value;
-        const password = registerPassword.value;
+        if (registerPassword.value !== registerPasswordConfirm.value) {
+            showNotification('Şifreler eşleşmiyor', 'error');
+            return;
+        }
 
         try {
             const response = await fetch(`${API_URL}/auth/register`, {
@@ -77,14 +116,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ fullName, email, password })
+                body: JSON.stringify({
+                    fullName: registerFullName.value,
+                    email: registerEmail.value,
+                    password: registerPassword.value
+                })
             });
 
-            const data = await response.json();
-
             if (!response.ok) {
-                throw new Error(data.message || 'Kayıt olurken bir hata oluştu');
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Kayıt olurken bir hata oluştu');
             }
+
+            const data = await response.json();
 
             // Token ve kullanıcı bilgilerini kaydet
             localStorage.setItem('token', data.token);
@@ -94,11 +138,14 @@ document.addEventListener('DOMContentLoaded', () => {
             const registerModal = document.getElementById('registerModal');
             closeModal(registerModal);
 
-            // UI'ı güncelle
-            updateUIForAuthState();
+            // Auth durumu değişti event'ini tetikle
+            triggerAuthStateChange();
 
             // Başarılı mesajı göster
             showNotification('Başarıyla kayıt oldunuz!', 'success');
+
+            // Sayfayı yenile
+            window.location.reload();
 
         } catch (error) {
             console.error('Register error:', error);
@@ -116,9 +163,12 @@ document.addEventListener('DOMContentLoaded', () => {
         // Auth durumu değişti event'ini tetikle
         triggerAuthStateChange();
 
-        // Ana sayfaya yönlendir
-        window.location.href = 'index.html';
+        // Sayfayı yenile
+        window.location.reload();
     });
+
+    // Sayfa yüklendiğinde auth durumunu kontrol et
+    updateMenu();
 });
 
 // Menüyü güncelle
@@ -148,9 +198,32 @@ function updateMenu() {
 
 // İsmin baş harflerini al
 function getInitials(name) {
+    if (!name) return '';
     return name
         .split(' ')
         .map(word => word[0])
         .join('')
         .toUpperCase();
+}
+
+// Bildirim göster
+function showNotification(message, type = 'info') {
+    // Mevcut bildirimi kaldır
+    const existingNotification = document.querySelector('.notification');
+    if (existingNotification) {
+        existingNotification.remove();
+    }
+
+    // Yeni bildirimi oluştur
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.textContent = message;
+
+    // Bildirimi ekle
+    document.body.appendChild(notification);
+
+    // 3 saniye sonra kaldır
+    setTimeout(() => {
+        notification.remove();
+    }, 3000);
 }
