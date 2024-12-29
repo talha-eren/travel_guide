@@ -108,7 +108,53 @@ body {
     letter-spacing: 5px;
     margin-bottom: 1rem;
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-    animation: fadeInDown 1.2s ease-out;
+    animation: titleAnimation 3s ease-in-out infinite;
+    position: relative;
+    display: inline-block;
+}
+
+@keyframes titleAnimation {
+    0% {
+        transform: translateY(0) scale(1);
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    }
+    50% {
+        transform: translateY(-10px) scale(1.1);
+        text-shadow: 4px 4px 8px rgba(0, 0, 0, 0.5);
+        color: #ff6b6b;
+    }
+    100% {
+        transform: translateY(0) scale(1);
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        color: #e74c3c;
+    }
+}
+
+.hero-content .subtitle::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: #e74c3c;
+    transform-origin: center;
+    animation: lineAnimation 3s ease-in-out infinite;
+}
+
+@keyframes lineAnimation {
+    0% {
+        transform: scaleX(0);
+        opacity: 0;
+    }
+    50% {
+        transform: scaleX(1);
+        opacity: 1;
+    }
+    100% {
+        transform: scaleX(0);
+        opacity: 0;
+    }
 }
 
 .hero-content h1 {
@@ -1375,9 +1421,30 @@ footer {
 
 .place-meta {
     display: flex;
+    align-items: center;
     gap: 1rem;
-    margin-bottom: 1rem;
+    margin-bottom: 0.5rem;
     flex-wrap: wrap;
+}
+
+.place-rating, .place-comments {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #666;
+}
+
+.place-rating i {
+    color: #f1c40f;
+}
+
+.place-comments i {
+    color: #3498db;
+}
+
+.place-rating span, .place-comments span {
+    font-size: 0.9rem;
+    color: #666;
 }
 
 .place-meta span {
@@ -1398,7 +1465,7 @@ footer {
     -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
-    line-height: 1.6;
+    text-overflow: ellipsis;
 }
 
 .card-actions {
@@ -2505,8 +2572,9 @@ main {
 
 .place-meta {
     display: flex;
-    gap: 2rem;
     align-items: center;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
     flex-wrap: wrap;
 }
 

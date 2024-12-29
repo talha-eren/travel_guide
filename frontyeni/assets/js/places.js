@@ -195,6 +195,10 @@ function createPlaceCard(place) {
         ...processPhotos(place.images, apiKey)
     ].filter(Boolean);
 
+    // Yorum sayısını kontrol et
+    const commentCount = Array.isArray(place.comments) ? place.comments.length : 
+                        (typeof place.commentCount === 'number' ? place.commentCount : 0);
+
     return `
         <div class="place-card">
             <div class="place-image">
@@ -210,9 +214,15 @@ function createPlaceCard(place) {
             </div>
             <div class="place-info">
                 <h3>${place.name || 'İsimsiz Mekan'}</h3>
-                <div class="place-rating">
-                    ${getStarRating(place.rating || 0)}
-                    <span>(${place.totalRatings || 0} değerlendirme)</span>
+                <div class="place-meta">
+                    <div class="place-rating">
+                        ${getStarRating(place.rating || 0)}
+                        <span>(${place.totalRatings || 0} değerlendirme)</span>
+                    </div>
+                    <div class="place-comments">
+                        <i class="fas fa-comments"></i>
+                        <span>${commentCount} yorum</span>
+                    </div>
                 </div>
                 <div class="place-meta">
                     <span><i class="fas fa-tag"></i> ${place.category || 'Kategori Belirtilmemiş'}</span>
