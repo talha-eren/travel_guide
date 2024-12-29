@@ -10,8 +10,8 @@ async function getProfile() {
         }
 
         // Form alanlarını doldur
-        document.getElementById('fullName').value = user.fullName;
-        document.getElementById('email').value = user.email;
+        document.getElementById('fullName').value = user.fullName || '';
+        document.getElementById('email').value = user.email || '';
 
         // Avatar ve isim güncelle
         const avatarText = document.querySelector('.avatar-text');
@@ -19,18 +19,18 @@ async function getProfile() {
         const profileEmail = document.querySelector('.profile-email');
 
         if (avatarText) {
-            avatarText.textContent = getInitials(user.fullName);
+            avatarText.textContent = getInitials(user.fullName || '');
         }
         if (profileName) {
-            profileName.textContent = user.fullName;
+            profileName.textContent = user.fullName || 'İsimsiz Kullanıcı';
         }
         if (profileEmail) {
-            profileEmail.textContent = user.email;
+            profileEmail.textContent = user.email || '';
         }
 
     } catch (error) {
         console.error('Profil bilgileri alınırken hata:', error);
-        showNotification(error.message, 'error');
+        showNotification('Profil bilgileri alınamadı', 'error');
     }
 }
 
@@ -142,7 +142,7 @@ function getInitials(name) {
 function switchTab(tabId) {
     // Tüm sekmeleri gizle
     document.querySelectorAll('.profile-section').forEach(section => {
-        section.classList.remove('active');
+        section.style.display = 'none';
     });
 
     // Tüm tab butonlarını pasif yap
@@ -153,7 +153,7 @@ function switchTab(tabId) {
     // Seçilen sekmeyi göster
     const selectedSection = document.getElementById(tabId);
     if (selectedSection) {
-        selectedSection.classList.add('active');
+        selectedSection.style.display = 'block';
     }
 
     // Seçilen tab butonunu aktif yap
@@ -173,6 +173,10 @@ function checkAuth() {
 // Yorum silme fonksiyonu
 async function deleteComment(commentId) {
     try {
+        if (!confirm('Bu yorumu silmek istediğinizden emin misiniz?')) {
+            return;
+        }
+
         const response = await fetch(`${API_URL}/profile/comments/${commentId}`, {
             method: 'DELETE',
             headers: {
@@ -197,6 +201,15 @@ async function deleteComment(commentId) {
 // Kullanıcının yorumlarını yükle
 async function loadUserComments() {
     try {
+        // Önce tüm mekanları al
+        const placesResponse = await fetch(`${API_URL}/places`);
+        if (!placesResponse.ok) {
+            throw new Error('Mekanlar yüklenirken bir hata oluştu');
+        }
+        const placesData = await placesResponse.json();
+        const placesMap = new Map(placesData.places.map(place => [place._id, place]));
+
+        // Sonra yorumları al
         const response = await fetch(`${API_URL}/profile/comments`, {
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -215,31 +228,21 @@ async function loadUserComments() {
             return;
         }
 
-        commentsContainer.innerHTML = comments.map(comment => `
-            <div class="comment-card">
-                <div class="comment-place">
-                    <div class="place-image">
-                        <img src="${comment.place.image || 'assets/images/placeholder.jpg'}" alt="${comment.place.name}">
-                    </div>
-                    <div class="place-info">
-                        <h3>${comment.place.name}</h3>
-                        <p>${comment.place.city} - ${comment.place.category}</p>
-                    </div>
-                </div>
-                <div class="comment-content">
-                    <div class="comment-rating">
-                        ${getStarRating(comment.rating)}
-                    </div>
-                    <p class="comment-text">${comment.text}</p>
-                    <div class="comment-footer">
-                        <p class="comment-date">${formatDate(comment.createdAt)}</p>
-                        <button onclick="deleteComment('${comment._id}')" class="btn-delete">
-                            <i class="fas fa-trash"></i> Yorumu Sil
-                        </button>
-                    </div>
-                </div>
-            </div>
-        `).join('');
+        // Her yorumun place objesini ana ekrandaki mekan bilgileriyle birleştir
+        const processedComments = comments.map(comment => {
+            const fullPlace = placesMap.get(comment.place._id);
+            return {
+                ...comment,
+                place: {
+                    ...comment.place,
+                    ...fullPlace,
+                    photo: fullPlace?.photo || fullPlace?.images?.[0] || comment.place.image || comment.place.photo,
+                    images: fullPlace?.images || comment.place.images || []
+                }
+            };
+        });
+
+        commentsContainer.innerHTML = processedComments.map(comment => createCommentCard(comment)).join('');
 
     } catch (error) {
         console.error('Error loading comments:', error);
@@ -269,30 +272,7 @@ async function loadUserFavorites() {
             return;
         }
 
-        favoritesContainer.innerHTML = favorites.map(place => `
-            <div class="place-card">
-                <div class="place-image">
-                    <img src="${place.images?.[0] || 'assets/images/placeholder.jpg'}" alt="${place.name}">
-                </div>
-                <div class="place-info">
-                    <h3>${place.name}</h3>
-                    <p class="place-location"><i class="fas fa-map-marker-alt"></i> ${place.city}</p>
-                    <p class="place-category"><i class="fas fa-tag"></i> ${place.category}</p>
-                    <div class="place-rating">
-                        ${getStarRating(place.rating || 0)}
-                        <span>(${place.totalRatings || 0} değerlendirme)</span>
-                    </div>
-                    <div class="place-actions">
-                        <a href="place-details.html?id=${place._id}" class="btn-link">
-                            <i class="fas fa-external-link-alt"></i> Detayları Gör
-                        </a>
-                        <button onclick="removeFavorite('${place._id}')" class="btn-remove">
-                            <i class="fas fa-heart-broken"></i> Favorilerden Çıkar
-                        </button>
-                    </div>
-                </div>
-            </div>
-        `).join('');
+        favoritesContainer.innerHTML = favorites.map(place => createFavoriteCard(place)).join('');
 
     } catch (error) {
         console.error('Error loading favorites:', error);
@@ -304,6 +284,10 @@ async function loadUserFavorites() {
 // Favorilerden mekan çıkar
 async function removeFavorite(placeId) {
     try {
+        if (!confirm('Bu mekanı favorilerden çıkarmak istediğinizden emin misiniz?')) {
+            return;
+        }
+
         const response = await fetch(`${API_URL}/profile/favorites/${placeId}`, {
             method: 'DELETE',
             headers: {
@@ -327,71 +311,87 @@ async function removeFavorite(placeId) {
 
 // Tab içeriğini yükle
 async function loadTabContent(tabId) {
-    // Önce tab'ı aktif et
-    switchTab(tabId);
+    try {
+        // Önce tab'ı aktif et
+        switchTab(tabId);
 
-    // Tab içeriğine göre veri yükle
-    switch (tabId) {
-        case 'profile':
-            await getProfile();
-            break;
-        case 'favorites':
-            await loadUserFavorites();
-            break;
-        case 'comments':
-            await loadUserComments();
-            break;
-        case 'security':
-            // Güvenlik sekmesi için özel bir işlem gerekmez
-            break;
+        // Tab içeriğine göre veri yükle
+        switch (tabId) {
+            case 'profile':
+                await getProfile();
+                break;
+            case 'favorites':
+                await loadUserFavorites();
+                break;
+            case 'comments':
+                await loadUserComments();
+                break;
+            case 'security':
+                // Güvenlik sekmesi için özel bir işlem gerekmez
+                break;
+        }
+    } catch (error) {
+        console.error('Tab içeriği yüklenirken hata:', error);
+        showNotification('İçerik yüklenirken bir hata oluştu', 'error');
     }
 }
 
 // Sayfa yüklendiğinde
 document.addEventListener('DOMContentLoaded', async function() {
-    // Auth kontrolü
-    if (!checkAuth()) {
-        window.location.href = 'index.html';
-        return;
+    try {
+        // Auth kontrolü
+        if (!checkAuth()) {
+            window.location.href = 'index.html';
+            return;
+        }
+
+        // Bileşenleri yükle
+        await loadComponents();
+
+        // Form event listener'larını ekle
+        const profileForm = document.getElementById('profileForm');
+        const passwordForm = document.getElementById('passwordForm');
+
+        if (profileForm) {
+            profileForm.addEventListener('submit', updateProfile);
+        }
+
+        if (passwordForm) {
+            passwordForm.addEventListener('submit', changePassword);
+        }
+
+        // Tab değiştirme işlemleri için event listener
+        const profileNav = document.querySelector('.profile-nav');
+        if (profileNav) {
+            profileNav.addEventListener('click', async (e) => {
+                const tabButton = e.target.closest('li');
+                if (!tabButton) return;
+
+                const newTabId = tabButton.dataset.tab;
+                if (newTabId) {
+                    // URL'i güncelle
+                    const url = new URL(window.location);
+                    url.searchParams.set('tab', newTabId);
+                    window.history.pushState({}, '', url);
+                    
+                    // Tab içeriğini yükle
+                    await loadTabContent(newTabId);
+                }
+            });
+        }
+
+        // İlk yüklemede aktif tab'ı belirle
+        const urlParams = new URLSearchParams(window.location.search);
+        const activeTab = urlParams.get('tab') || 'profile';
+        
+        // Profil bilgilerini yükle
+        await getProfile();
+        
+        // Aktif tab'ı yükle
+        await loadTabContent(activeTab);
+
+    } catch (error) {
+        console.error('Sayfa yüklenirken hata:', error);
+        showNotification('Sayfa yüklenirken bir hata oluştu', 'error');
     }
-
-    // Form event listener'larını ekle
-    const profileForm = document.getElementById('profileForm');
-    const passwordForm = document.getElementById('passwordForm');
-
-    if (profileForm) {
-        profileForm.addEventListener('submit', updateProfile);
-    }
-
-    if (passwordForm) {
-        passwordForm.addEventListener('submit', changePassword);
-    }
-
-    // Tab değiştirme işlemleri için event listener
-    const profileNav = document.querySelector('.profile-nav');
-    if (profileNav) {
-        profileNav.addEventListener('click', (e) => {
-            const tabButton = e.target.closest('li');
-            if (!tabButton) return;
-
-            const newTabId = tabButton.dataset.tab;
-            if (newTabId) {
-                // URL'i güncelle
-                const url = new URL(window.location);
-                url.searchParams.set('tab', newTabId);
-                window.history.pushState({}, '', url);
-                
-                // Tab içeriğini yükle
-                loadTabContent(newTabId);
-            }
-        });
-    }
-
-    // İlk yüklemede aktif tab'ı belirle
-    const urlParams = new URLSearchParams(window.location.search);
-    const activeTab = urlParams.get('tab') || 'profile';
-    await loadTabContent(activeTab);
-
-    // Sayfa yüklendiğinde yorumları yükle
-    loadUserComments();
 }); 

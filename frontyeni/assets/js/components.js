@@ -43,9 +43,29 @@ function updateAuthUI() {
         const avatarText = document.querySelector('.avatar-text');
         
         if (user) {
-            if (userNameElement) userNameElement.textContent = user.fullName;
-            if (avatarText) avatarText.textContent = getInitials(user.fullName);
+            if (userNameElement) userNameElement.textContent = user.fullName || 'İsimsiz Kullanıcı';
+            if (avatarText) avatarText.textContent = getInitials(user.fullName || '');
         }
+
+        // Profil dropdown menüsünü ayarla
+        const profileButton = document.querySelector('.profile-button');
+        if (profileButton) {
+            profileButton.addEventListener('click', () => {
+                window.location.href = 'profile.html';
+            });
+        }
+
+        // Profil menü linklerini ayarla
+        const profileLinks = document.querySelectorAll('.dropdown-menu a');
+        profileLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const href = link.getAttribute('href');
+                if (href) {
+                    window.location.href = href;
+                }
+            });
+        });
     } else {
         // Kullanıcı giriş yapmamışsa
         if (guestMenu) guestMenu.style.display = 'flex';
@@ -57,6 +77,7 @@ function updateAuthUI() {
 
 // İsmin baş harflerini al
 function getInitials(name) {
+    if (!name) return '';
     return name
         .split(' ')
         .map(word => word[0])

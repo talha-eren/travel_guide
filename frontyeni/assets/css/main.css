@@ -1118,18 +1118,20 @@ footer {
 }
 
 .profile-nav li {
-    padding: 15px 30px;
     cursor: pointer;
+    padding: 1rem;
+    margin-bottom: 0.5rem;
+    border-radius: 8px;
     transition: all 0.3s ease;
 }
 
 .profile-nav li:hover {
-    background: #f8f9fa;
+    background-color: rgba(74, 144, 226, 0.1);
 }
 
 .profile-nav li.active {
-    background: #e9ecef;
-    border-left: 4px solid #007bff;
+    background-color: var(--primary-color);
+    color: white;
 }
 
 .profile-nav i {
@@ -1147,7 +1149,7 @@ footer {
     display: none;
 }
 
-.profile-section.active {
+.profile-section#profile {
     display: block;
 }
 
@@ -2845,5 +2847,109 @@ main {
     #imageGallery .thumbnail {
         flex: 0 0 80px;
         height: 80px;
+    }
+} 
+
+/* Favori Kartı Stilleri */
+.favorite-card {
+    display: flex;
+    margin-bottom: 1.5rem;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.favorite-card .place-image {
+    width: 200px;
+    height: 200px;
+    flex-shrink: 0;
+}
+
+.favorite-card .place-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.favorite-card .place-info {
+    padding: 1rem;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.favorite-card .card-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: auto;
+}
+
+/* Yorum Kartı Stilleri */
+.comment-card {
+    display: flex;
+    margin-bottom: 1.5rem;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.comment-card .place-image {
+    width: 200px;
+    height: 200px;
+    flex-shrink: 0;
+}
+
+.comment-card .place-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.comment-card .comment-content {
+    padding: 1rem;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.comment-card .comment-details {
+    margin: 1rem 0;
+}
+
+.comment-card .comment-text {
+    margin: 0.5rem 0;
+    color: #666;
+}
+
+.comment-card .comment-date {
+    color: #999;
+    font-size: 0.9rem;
+}
+
+.comment-card .card-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: auto;
+}
+
+/* Mobil için responsive düzenlemeler */
+@media (max-width: 768px) {
+    .favorite-card,
+    .comment-card {
+        flex-direction: column;
+    }
+
+    .favorite-card .place-image,
+    .comment-card .place-image {
+        width: 100%;
+        height: 200px;
+    }
+
+    .favorite-card .card-actions,
+    .comment-card .card-actions {
+        flex-direction: column;
     }
 } 
