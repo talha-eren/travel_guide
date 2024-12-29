@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <!-- JavaScript Dosyaları -->
+    <script src="assets/js/config.js"></script>
     <script src="assets/js/main.js" defer></script>
     <script src="assets/js/components.js" defer></script>
     <script src="assets/js/auth.js" defer></script>
@@ -61,12 +62,7 @@
                 <!-- Sol Kolon: Galeri ve Temel Bilgiler -->
                 <div class="left-column">
                     <!-- Galeri -->
-                    <div class="place-gallery">
-                        <div class="main-image">
-                            <img id="mainImage" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3Crect width='200' height='200' fill='%23f0f0f0'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial' font-size='16' fill='%23999'%3EGörsel Yok%3C/text%3E%3C/svg%3E" alt="Mekan Görseli">
-                        </div>
-                        <div class="thumbnail-list" id="imageGallery"></div>
-                    </div>
+                    <div id="imageGallery" class="place-gallery"></div>
 
                     <!-- Açıklama -->
                     <section class="info-section description">
@@ -109,11 +105,5 @@
 
     <!-- Include footer component -->
     <div id="footer"></div>
-
-    <!-- JavaScript Files -->
-    <script src="assets/js/main.js"></script>
-    <script src="assets/js/components.js" defer></script>
-    <script src="assets/js/auth.js" defer></script>
-    <script src="assets/js/place-details.js" defer></script>
 </body>
 </html> 

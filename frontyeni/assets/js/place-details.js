@@ -73,7 +73,7 @@ function fillPlaceDetails(place) {
         }
 
         // Resim galerisini ayarla
-        setupImageGallery(place.images || []);
+        setupImageGallery(place);
 
         // Çalışma saatlerini ayarla
         setupOpeningHours(place.openingHours || null);
@@ -84,87 +84,81 @@ function fillPlaceDetails(place) {
 }
 
 // Resim galerisini ayarla
-function setupImageGallery(images) {
-    console.log('Setting up image gallery with images:', images); // Debug log
+function setupImageGallery(place) {
+    const galleryContainer = document.getElementById('imageGallery');
+    if (!galleryContainer) return;
 
-    const mainImage = document.getElementById('mainImage');
-    const gallery = document.getElementById('imageGallery');
-    
-    // Varsayılan resim
+    // Varsayılan resmi tanımla
     const defaultImage = 'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'200\' height=\'200\' viewBox=\'0 0 200 200\'%3E%3Crect width=\'200\' height=\'200\' fill=\'%23f0f0f0\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' dominant-baseline=\'middle\' text-anchor=\'middle\' font-family=\'Arial\' font-size=\'16\' fill=\'%23999\'%3EGörsel Yok%3C/text%3E%3C/svg%3E';
+
+    // Tüm fotoğrafları birleştir
+    const allPhotos = [];
     
-    // Eğer hiç resim yoksa varsayılan resmi göster
-    if (!images || !Array.isArray(images) || images.length === 0) {
-        console.log('No images found, showing default image'); // Debug log
-        mainImage.src = defaultImage;
-        mainImage.alt = 'Görsel Yok';
-        gallery.innerHTML = '';
-        return;
+    // Google Maps API anahtarını kontrol et
+    const apiKey = window.GOOGLE_MAPS_API_KEY || '';
+    
+    // Önce photo alanını kontrol et
+    if (place.photo) {
+        if (Array.isArray(place.photo)) {
+            allPhotos.push(...place.photo.map(url => url.includes('maps.googleapis.com/maps/api/place/photo') ? `${url}&key=${apiKey}` : url));
+        } else {
+            allPhotos.push(place.photo.includes('maps.googleapis.com/maps/api/place/photo') ? `${place.photo}&key=${apiKey}` : place.photo);
+        }
     }
     
-    // Geçerli resimleri filtrele
-    const validImages = images.filter(img => img && typeof img === 'string' && img.startsWith('http'));
-    console.log('Valid images:', validImages); // Debug log
-
-    if (validImages.length === 0) {
-        console.log('No valid images found, showing default'); // Debug log
-        mainImage.src = defaultImage;
-        mainImage.alt = 'Görsel Yok';
-        gallery.innerHTML = '';
-        return;
+    // Sonra images alanını kontrol et
+    if (place.images && place.images.length > 0) {
+        allPhotos.push(...place.images.map(url => url.includes('maps.googleapis.com/maps/api/place/photo') ? `${url}&key=${apiKey}` : url));
     }
-    
-    // Ana resmi ayarla
-    console.log('Setting main image:', validImages[0]); // Debug log
-    const img = new Image();
-    img.onload = () => {
-        mainImage.src = validImages[0];
-        mainImage.alt = 'Mekan Görseli';
-    };
-    img.onerror = () => {
-        console.log('Error loading main image, showing default'); // Debug log
-        mainImage.src = defaultImage;
-        mainImage.alt = 'Görsel Yüklenemedi';
-    };
-    img.src = validImages[0];
 
-    // Küçük resimleri ekle
-    gallery.innerHTML = validImages.map((image, index) => {
-        console.log(`Adding thumbnail ${index + 1}:`, image); // Debug log
-        const escapedImage = image.replace(/'/g, "\\'"); // URL'deki tırnak işaretlerini escape et
-        return `
-            <div class="thumbnail${index === 0 ? ' active' : ''}" onclick="changeMainImage('${escapedImage}', this)">
-                <img src="${image}" alt="Mekan Görseli ${index + 1}" 
-                     onerror="this.src='${defaultImage}'; this.alt='Görsel Yüklenemedi';">
+    // Eğer hiç fotoğraf yoksa varsayılan resmi göster
+    if (allPhotos.length === 0) {
+        galleryContainer.innerHTML = `
+            <div class="main-image">
+                <img src="${defaultImage}" alt="Görsel yok">
             </div>
         `;
-    }).join('');
+        return;
+    }
+
+    // Ana resim ve küçük resimleri oluştur
+    const mainImageHtml = `
+        <div class="main-image">
+            <img src="${allPhotos[0]}" alt="Ana görsel" id="mainImage" onerror="this.src='${defaultImage}'">
+        </div>
+    `;
+
+    const thumbnailsHtml = allPhotos.length > 1 ? `
+        <div class="thumbnails">
+            ${allPhotos.map((photo, index) => `
+                <div class="thumbnail ${index === 0 ? 'active' : ''}" onclick="changeMainImage('${photo}', this)">
+                    <img src="${photo}" alt="Küçük görsel ${index + 1}" onerror="this.src='${defaultImage}'">
+                </div>
+            `).join('')}
+        </div>
+    ` : '';
+
+    galleryContainer.innerHTML = mainImageHtml + thumbnailsHtml;
 }
 
 // Ana resmi değiştir
-function changeMainImage(src, thumbnail) {
-    console.log('Changing main image to:', src); // Debug log
+function changeMainImage(imageUrl, thumbnail) {
     const mainImage = document.getElementById('mainImage');
     const defaultImage = 'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'200\' height=\'200\' viewBox=\'0 0 200 200\'%3E%3Crect width=\'200\' height=\'200\' fill=\'%23f0f0f0\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' dominant-baseline=\'middle\' text-anchor=\'middle\' font-family=\'Arial\' font-size=\'16\' fill=\'%23999\'%3EGörsel Yok%3C/text%3E%3C/svg%3E';
     
-    // Resmi yükle
-    const img = new Image();
-    img.onload = () => {
-        mainImage.src = src;
-        mainImage.alt = 'Mekan Görseli';
-    };
-    img.onerror = () => {
-        console.log('Error loading changed image, showing default'); // Debug log
-        mainImage.src = defaultImage;
-        mainImage.alt = 'Görsel Yüklenemedi';
-    };
-    img.src = src;
-    
+    if (mainImage) {
+        mainImage.src = imageUrl;
+        mainImage.onerror = function() {
+            this.src = defaultImage;
+        };
+    }
+
     // Aktif thumbnail'i güncelle
-    document.querySelectorAll('.thumbnail').forEach(thumb => {
-        thumb.classList.remove('active');
-    });
-    thumbnail.classList.add('active');
+    const thumbnails = document.querySelectorAll('.thumbnail');
+    thumbnails.forEach(thumb => thumb.classList.remove('active'));
+    if (thumbnail) {
+        thumbnail.classList.add('active');
+    }
 }
 
 // Çalışma saatlerini ayarla
