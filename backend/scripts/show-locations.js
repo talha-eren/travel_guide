@@ -1,36 +1,44 @@
 const mongoose = require('mongoose');
-require('dotenv').config();
+
+// MongoDB Atlas bağlantı URL'i
+const MONGODB_URI = 'mongodb+srv://talhaaeren:Talha123@cluster0.iqhzskb.mongodb.net/deneme?retryWrites=true&w=majority';
 
 async function showLocations() {
     try {
         // MongoDB'ye bağlan
-        await mongoose.connect(process.env.MONGODB_URI);
-        console.log('MongoDB bağlantısı başarılı\n');
+        await mongoose.connect(MONGODB_URI);
+        console.log('MongoDB Atlas bağlantısı başarılı\n');
 
-        // Places koleksiyonundan sadece konum bilgilerini al
-        const places = await mongoose.connection.collection('places').find({}, {
-            projection: {
-                name: 1,
-                city: 1,
-                address: 1,
-                _id: 0
-            }
-        }).toArray();
+        // Tüm mekanları al
+        const places = await mongoose.connection.collection('places').find({}).toArray();
+        console.log(`Toplam ${places.length} mekan bulundu.\n`);
 
-        console.log('=== MEKAN KONUM BİLGİLERİ ===\n');
+        // Her mekanın konum bilgilerini göster
         places.forEach((place, index) => {
-            console.log(`${index + 1}. Mekan: ${place.name}`);
-            console.log('Şehir:', place.city || 'Belirtilmemiş');
-            console.log('Adres:', place.address || 'Belirtilmemiş');
-            console.log('-------------------\n');
+            console.log(`${index + 1}. ${place.name}`);
+            console.log('-------------------------');
+            console.log(`Şehir: ${place.city || 'Belirtilmemiş'}`);
+            console.log(`Adres: ${place.address || 'Belirtilmemiş'}`);
+            console.log(`Konum: ${place.location || 'Belirtilmemiş'}`);
+            if (place.coordinates) {
+                console.log(`Koordinatlar: ${place.coordinates.lat}, ${place.coordinates.lng}`);
+            } else {
+                console.log('Koordinatlar: Belirtilmemiş');
+            }
+            console.log(`Harita URL: ${place.map_url || 'Belirtilmemiş'}`);
+            console.log('\n');
         });
 
     } catch (error) {
-        console.error('Hata:', error);
+        console.error('MongoDB bağlantı hatası:', error);
     } finally {
-        await mongoose.connection.close();
-        process.exit();
+        // Bağlantıyı kapat
+        if (mongoose.connection.readyState === 1) {
+            await mongoose.connection.close();
+            console.log('MongoDB bağlantısı kapatıldı');
+        }
     }
 }
 
+// Scripti çalıştır
 showLocations(); 

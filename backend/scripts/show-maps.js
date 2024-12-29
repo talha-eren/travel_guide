@@ -1,42 +1,42 @@
 const mongoose = require('mongoose');
-require('dotenv').config();
 
-async function showMapInfo() {
+// MongoDB Atlas bağlantı URL'i
+const MONGODB_URI = 'mongodb://localhost:27017/deneme';
+
+async function showMaps() {
     try {
         // MongoDB'ye bağlan
-        await mongoose.connect(process.env.MONGODB_URI);
+        await mongoose.connect(MONGODB_URI);
         console.log('MongoDB bağlantısı başarılı\n');
 
-        // Places koleksiyonundan map bilgilerini al
-        const places = await mongoose.connection.collection('places').find({}, {
-            projection: {
-                name: 1,
-                map_url: 1,
-                location: 1,
-                coordinates: 1,
-                latitude: 1,
-                longitude: 1,
-                _id: 0
-            }
-        }).toArray();
+        // Tüm mekanları al
+        const places = await mongoose.connection.collection('places').find({}).toArray();
+        console.log(`Toplam ${places.length} mekan bulundu.\n`);
 
-        console.log('=== MEKAN HARİTA BİLGİLERİ ===\n');
+        // Her mekanın harita bilgilerini göster
         places.forEach((place, index) => {
-            console.log(`${index + 1}. Mekan: ${place.name}`);
-            if (place.map_url) console.log('Harita URL:', place.map_url);
-            if (place.location) console.log('Konum:', place.location);
-            if (place.coordinates) console.log('Koordinatlar:', place.coordinates);
-            if (place.latitude) console.log('Enlem:', place.latitude);
-            if (place.longitude) console.log('Boylam:', place.longitude);
-            console.log('-------------------\n');
+            console.log(`${index + 1}. ${place.name}`);
+            console.log('-------------------------');
+            console.log('Harita Bilgileri:');
+            console.log(`- Map URL: ${place.map_url || 'Belirtilmemiş'}`);
+            console.log(`- Koordinatlar: ${place.coordinates ? `${place.coordinates.lat}, ${place.coordinates.lng}` : 'Belirtilmemiş'}`);
+            console.log(`- Konum: ${place.location || 'Belirtilmemiş'}`);
+            console.log(`- Adres: ${place.address || 'Belirtilmemiş'}`);
+            console.log(`- Şehir: ${place.city || 'Belirtilmemiş'}`);
+            console.log(`- Google Maps URL: ${place.google_maps_url || 'Belirtilmemiş'}`);
+            console.log('\n');
         });
 
     } catch (error) {
-        console.error('Hata:', error);
+        console.error('MongoDB bağlantı hatası:', error);
     } finally {
-        await mongoose.connection.close();
-        process.exit();
+        // Bağlantıyı kapat
+        if (mongoose.connection.readyState === 1) {
+            await mongoose.connection.close();
+            console.log('MongoDB bağlantısı kapatıldı');
+        }
     }
 }
 
-showMapInfo(); 
+// Scripti çalıştır
+showMaps(); 
