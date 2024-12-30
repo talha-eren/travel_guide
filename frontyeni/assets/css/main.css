@@ -3292,7 +3292,7 @@ main {
 }
 
 .favorite-card .place-image {
-    width: 200px;
+        width: 200px;
     height: 200px;
     flex-shrink: 0;
 }
@@ -3372,7 +3372,7 @@ main {
     .comment-card {
         flex-direction: column;
     }
-
+    
     .favorite-card .place-image,
     .comment-card .place-image {
         width: 100%;
@@ -3415,7 +3415,7 @@ main {
 } 
 
 /* Mekan Yönetimi Stilleri */
-.section-header {
+    .section-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -3426,7 +3426,7 @@ main {
 
 .header-left {
     display: flex;
-    flex-direction: column;
+        flex-direction: column;
 }
 
 .header-left h2 {
@@ -3449,8 +3449,8 @@ main {
 
 .header-actions {
     display: flex;
-    gap: 1rem;
-}
+        gap: 1rem;
+    }
 
 .add-place-btn {
     display: flex;
@@ -3469,9 +3469,9 @@ main {
 .add-place-btn:hover {
     background-color: #45a049;
     transform: translateY(-2px);
-}
-
-.filter-controls {
+    }
+    
+    .filter-controls {
     display: flex;
     gap: 1rem;
     margin-bottom: 2rem;
@@ -3493,7 +3493,7 @@ main {
 }
 
 .search-input {
-    width: 100%;
+        width: 100%;
     padding: 0.8rem 1rem 0.8rem 2.5rem;
     border: 1px solid #ddd;
     border-radius: 4px;
@@ -3845,7 +3845,7 @@ main {
         width: 100%;
         justify-content: center;
     }
-}
+} 
 
 /* Admin Panel Avatar Stilleri */
 .user-info {
@@ -6066,7 +6066,7 @@ main {
         padding: 0.5rem 1rem;
         font-size: 0.9rem;
     }
-} 
+}
 
 /* Notification Styles */
 .notification {
