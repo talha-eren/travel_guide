@@ -17,9 +17,48 @@ function closeModal(modalElement) {
     modalElement.style.display = 'none';
     modalElement.classList.remove('show');
     document.body.classList.remove('modal-open');
+    document.body.style.overflow = ''; // Sayfa kaydırmasını geri aç
+    document.body.style.paddingRight = ''; // Padding'i sıfırla
+    
+    // Modal arka planını kaldır
     const backdrop = document.querySelector('.modal-backdrop');
     if (backdrop) {
         backdrop.remove();
+    }
+}
+
+// Modal açma fonksiyonu
+function openModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (!modal) return;
+
+    // Önce diğer tüm modalları kapat
+    document.querySelectorAll('.modal').forEach(m => {
+        m.style.display = 'none';
+        m.classList.remove('show');
+    });
+
+    // Yeni modalı aç
+    modal.style.display = 'flex';
+    modal.classList.add('show');
+    document.body.classList.add('modal-open');
+    document.body.style.overflow = 'hidden';
+
+    // Modal arka planını ekle
+    if (!document.querySelector('.modal-backdrop')) {
+        const backdrop = document.createElement('div');
+        backdrop.className = 'modal-backdrop fade show';
+        document.body.appendChild(backdrop);
+    }
+
+    // Modal içeriğini ortala
+    const modalContent = modal.querySelector('.modal-content');
+    if (modalContent) {
+        modalContent.style.opacity = '0';
+        setTimeout(() => {
+            modalContent.style.opacity = '1';
+            modalContent.style.transform = 'translateY(0)';
+        }, 10);
     }
 }
 
@@ -55,6 +94,59 @@ function triggerAuthStateChange() {
 
 // Form submit işlemleri
 document.addEventListener('DOMContentLoaded', () => {
+    // Modal açma butonları için event listener'lar ekle
+    const loginBtn = document.querySelector('[data-target="#loginModal"]');
+    const registerBtn = document.querySelector('[data-target="#registerModal"]');
+
+    loginBtn?.addEventListener('click', () => openModal('loginModal'));
+    registerBtn?.addEventListener('click', () => openModal('registerModal'));
+
+    // Switch between login and register modals
+    document.getElementById('switchToRegister')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        closeModal(document.getElementById('loginModal'));
+        openModal('registerModal');
+    });
+
+    document.getElementById('switchToLogin')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        closeModal(document.getElementById('registerModal'));
+        openModal('loginModal');
+    });
+
+    // Mevcut modal kapatma butonlarını seç
+    const closeButtons = document.querySelectorAll('.modal .close');
+    const modals = document.querySelectorAll('.modal');
+
+    // Her kapatma butonu için event listener ekle
+    closeButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const modal = button.closest('.modal');
+            if (modal) {
+                closeModal(modal);
+            }
+        });
+    });
+
+    // Modal dışına tıklandığında kapatma
+    modals.forEach(modal => {
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                closeModal(modal);
+            }
+        });
+    });
+
+    // ESC tuşuna basıldığında aktif modalı kapatma
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            const activeModal = document.querySelector('.modal[style*="display: block"]');
+            if (activeModal) {
+                closeModal(activeModal);
+            }
+        }
+    });
+
     const loginForm = document.getElementById('loginForm');
     const registerForm = document.getElementById('registerForm');
 
