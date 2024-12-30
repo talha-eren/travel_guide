@@ -17,13 +17,7 @@
             </div>
             <nav class="admin-nav">
                 <ul>
-                    <li>
-                        <a href="#" data-section="places">
-                            <i class="fas fa-map-marker-alt"></i>
-                            Mekan Yönetimi
-                        </a>
-                    </li>
-                    <li>
+                    <li class="active">
                         <a href="#" data-section="comments">
                             <i class="fas fa-comments"></i>
                             Yorum Yönetimi
@@ -36,7 +30,7 @@
                         </a>
                     </li>
                     <li>
-                        <a href="#" id="logoutButton">
+                        <a href="#" onclick="handleAdminLogout()">
                             <i class="fas fa-sign-out-alt"></i>
                             Çıkış Yap
                         </a>
@@ -47,119 +41,22 @@
 
         <!-- Ana İçerik -->
         <div class="admin-content">
-            <!-- Mekan Yönetimi Bölümü -->
-            <div class="admin-section" id="places-section">
-                <div class="section-header">
-                    <div class="header-left">
-                        <div class="location-icon">
-                            <i class="fas fa-map-marker-alt"></i>
-                        </div>
-                        <div class="header-text">
-                            <h2>Mekan Yönetimi</h2>
-                            <p>Tüm mekanları görüntüleyin, düzenleyin ve yönetin</p>
-                        </div>
-                    </div>
-                    <div class="header-right">
-                        <button id="addPlaceBtn" class="btn btn-add">
-                            <i class="fas fa-plus"></i> Yeni Mekan Ekle
-                        </button>
-                    </div>
-                </div>
-
-                <div class="search-section">
-                    <div class="search-box">
-                        <i class="fas fa-search"></i>
-                        <input type="text" id="searchPlaces" placeholder="Mekan adı, kategori veya şehir ara..." class="search-input">
-                    </div>
-                </div>
-
-                <div class="filter-section">
-                    <div class="filter-item">
-                        <div class="filter-icon">
-                            <i class="fas fa-tag"></i>
-                        </div>
-                        <div class="filter-content">
-                            <label for="categoryFilter">Kategori</label>
-                            <select id="categoryFilter" class="filter-select">
-                                <option value="all">Tüm Kategoriler</option>
-                                <option value="Tarihi">Tarihi</option>
-                                <option value="Doğal">Doğal</option>
-                                <option value="Kültürel">Kültürel</option>
-                                <option value="Eğlence">Eğlence</option>
-                                <option value="Yeme-İçme">Yeme-İçme</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="filter-item">
-                        <div class="filter-icon">
-                            <i class="fas fa-city"></i>
-                        </div>
-                        <div class="filter-content">
-                            <label for="cityFilter">Şehir</label>
-                            <select id="cityFilter" class="filter-select">
-                                <option value="all">Tüm Şehirler</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="filter-item">
-                        <div class="filter-icon">
-                            <i class="fas fa-check-circle"></i>
-                        </div>
-                        <div class="filter-content">
-                            <label for="statusFilter">Durum</label>
-                            <select id="statusFilter" class="filter-select">
-                                <option value="all">Tüm Durumlar</option>
-                                <option value="active">Aktif</option>
-                                <option value="inactive">Pasif</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="table-container">
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>Mekan Adı</th>
-                                <th>Kategori</th>
-                                <th>Şehir</th>
-                                <th>Puan</th>
-                                <th>Durum</th>
-                                <th>Son Güncelleme</th>
-                                <th>İşlemler</th>
-                            </tr>
-                        </thead>
-                        <tbody id="placesTableBody">
-                            <!-- Mekanlar JavaScript ile doldurulacak -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
             <!-- Yorum Yönetimi Bölümü -->
-            <div class="admin-section" id="comments-section">
+            <div class="admin-section active" id="comments-section">
                 <div class="section-header">
-                    <h2><i class="fas fa-comments"></i> Yorum Yönetimi</h2>
+                    <h2>Yorum Yönetimi</h2>
                     <div class="filter-controls">
-                        <div class="search-box">
-                            <i class="fas fa-search"></i>
-                            <input type="text" id="searchComments" placeholder="Yorum ara..." class="search-input">
-                        </div>
-                        <div class="filter-box">
-                            <select id="statusFilter" class="filter-select">
-                                <option value="all">Tüm Durumlar</option>
-                                <option value="approved">Onaylı</option>
-                                <option value="pending">Beklemede</option>
-                                <option value="banned">Yasaklı</option>
-                            </select>
-                        </div>
+                        <select id="statusFilter" class="filter-select">
+                            <option value="all">Tüm Durumlar</option>
+                            <option value="approved">Onaylı</option>
+                            <option value="banned">Yasaklı</option>
+                        </select>
+                        <input type="text" id="searchComments" placeholder="Yorum ara..." class="search-input">
                     </div>
                 </div>
 
-                <div class="table-container">
-                    <table class="data-table">
+                <div class="comments-table">
+                    <table>
                         <thead>
                             <tr>
                                 <th>Kullanıcı</th>
@@ -180,24 +77,19 @@
             <!-- Kullanıcılar Bölümü -->
             <div class="admin-section" id="users-section">
                 <div class="section-header">
-                    <h2><i class="fas fa-users"></i> Kullanıcı Yönetimi</h2>
+                    <h2>Kullanıcı Yönetimi</h2>
                     <div class="filter-controls">
-                        <div class="search-box">
-                            <i class="fas fa-search"></i>
-                            <input type="text" id="searchUsers" placeholder="Kullanıcı ara..." class="search-input">
-                        </div>
-                        <div class="filter-box">
-                            <select id="userStatusFilter" class="filter-select">
-                                <option value="all">Tüm Durumlar</option>
-                                <option value="active">Aktif</option>
-                                <option value="banned">Yasaklı</option>
-                            </select>
-                        </div>
+                        <select id="userStatusFilter" class="filter-select">
+                            <option value="all">Tüm Durumlar</option>
+                            <option value="active">Aktif</option>
+                            <option value="banned">Yasaklı</option>
+                        </select>
+                        <input type="text" id="searchUsers" placeholder="Kullanıcı ara..." class="search-input">
                     </div>
                 </div>
 
-                <div class="table-container">
-                    <table class="data-table">
+                <div class="users-table">
+                    <table>
                         <thead>
                             <tr>
                                 <th>Kullanıcı</th>
@@ -216,205 +108,9 @@
         </div>
     </div>
 
-    <!-- Mekan Ekleme/Düzenleme Modal -->
-    <div id="placeModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 id="placeModalTitle">Yeni Mekan Ekle</h2>
-                <span class="close">&times;</span>
-            </div>
-            <form id="placeForm">
-                <div class="form-group">
-                    <label for="placeName">Mekan Adı</label>
-                    <input type="text" id="placeName" name="name" required>
-                </div>
-                <div class="form-group">
-                    <label for="placeCategory">Kategori</label>
-                    <select id="placeCategory" name="category" required>
-                        <option value="">Kategori Seçin</option>
-                        <option value="Tarihi">Tarihi</option>
-                        <option value="Doğal">Doğal</option>
-                        <option value="Kültürel">Kültürel</option>
-                        <option value="Eğlence">Eğlence</option>
-                        <option value="Yeme-İçme">Yeme-İçme</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="placeCity">Şehir</label>
-                    <input type="text" id="placeCity" name="city" required>
-                </div>
-                <div class="form-group">
-                    <label for="placeAddress">Adres</label>
-                    <textarea id="placeAddress" name="address" required></textarea>
-                </div>
-                <div class="form-group">
-                    <label for="placeDescription">Açıklama</label>
-                    <textarea id="placeDescription" name="description" required></textarea>
-                </div>
-                <div class="form-group">
-                    <label for="placeImages">Görseller</label>
-                    <input type="file" id="placeImages" name="images" multiple accept="image/*">
-                    <div id="imagePreview" class="image-preview"></div>
-                </div>
-                <div class="form-actions">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-save"></i> Kaydet
-                    </button>
-                    <button type="button" class="btn btn-secondary" onclick="closeModal(document.getElementById('placeModal'))">
-                        <i class="fas fa-times"></i> İptal
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Mekanlar tablosu içindeki işlem butonları -->
-    <script id="placeRowTemplate" type="text/template">
-        <tr>
-            <td>${name}</td>
-            <td>${category}</td>
-            <td>${city}</td>
-            <td>${rating}</td>
-            <td><span class="status-badge status-${status.toLowerCase()}">${status}</span></td>
-            <td>${lastUpdate}</td>
-            <td>
-                <div class="action-buttons">
-                    <button onclick="editPlace('${id}')" class="btn-action btn-edit" title="Düzenle">
-                        <i class="fas fa-edit"></i>
-                    </button>
-                    <button onclick="deletePlace('${id}')" class="btn-action btn-delete" title="Sil">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </div>
-            </td>
-        </tr>
-    </script>
-
-    <!-- Yorum satırı template'i -->
-    <script id="commentRowTemplate" type="text/template">
-        <tr>
-            <td>${userName}</td>
-            <td>${placeName}</td>
-            <td>${comment}</td>
-            <td>${date}</td>
-            <td><span class="status-badge status-${status.toLowerCase()}">${status}</span></td>
-            <td>
-                <div class="action-buttons">
-                    <button onclick="editComment('${id}')" class="btn-action btn-edit" title="Düzenle">
-                        <i class="fas fa-edit"></i>
-                    </button>
-                    <button onclick="deleteComment('${id}')" class="btn-action btn-delete" title="Sil">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </div>
-            </td>
-        </tr>
-    </script>
-
-    <!-- Kullanıcı satırı template'i -->
-    <script id="userRowTemplate" type="text/template">
-        <tr>
-            <td>${name}</td>
-            <td>${registerDate}</td>
-            <td>${commentCount}</td>
-            <td><span class="status-badge status-${status.toLowerCase()}">${status}</span></td>
-            <td>
-                <div class="action-buttons">
-                    <button onclick="editUser('${id}')" class="btn-action btn-edit" title="Düzenle">
-                        <i class="fas fa-edit"></i>
-                    </button>
-                    <button onclick="deleteUser('${id}')" class="btn-action btn-delete" title="Sil">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </div>
-            </td>
-        </tr>
-    </script>
-
-    <!-- JavaScript kodunu güncelleyelim -->
-    <script>
-    function renderPlacesTable() {
-        const tbody = document.getElementById('placesTableBody');
-        if (!tbody) return;
-
-        const categoryFilter = document.getElementById('categoryFilter')?.value || 'all';
-        const cityFilter = document.getElementById('cityFilter')?.value || 'all';
-        const searchText = document.getElementById('searchPlaces')?.value.toLowerCase() || '';
-
-        const filteredPlaces = places.filter(place => {
-            const matchesCategory = categoryFilter === 'all' || place.category === categoryFilter;
-            const matchesCity = cityFilter === 'all' || place.city === cityFilter;
-            const matchesSearch = place.name.toLowerCase().includes(searchText);
-            return matchesCategory && matchesCity && matchesSearch;
-        });
-
-        const template = document.getElementById('placeRowTemplate').innerHTML;
-        tbody.innerHTML = filteredPlaces.map(place => {
-            return template
-                .replace('${name}', place.name)
-                .replace('${category}', place.category)
-                .replace('${city}', place.city)
-                .replace('${rating}', place.rating ? place.rating.toFixed(1) : '-')
-                .replace('${status}', place.status)
-                .replace('${lastUpdate}', new Date(place.lastUpdate).toLocaleDateString())
-                .replace(/\${id}/g, place._id);
-        }).join('');
-    }
-
-    function renderCommentsTable() {
-        const tbody = document.getElementById('commentsTableBody');
-        if (!tbody) return;
-
-        const statusFilter = document.getElementById('statusFilter')?.value || 'all';
-        const searchText = document.getElementById('searchComments')?.value.toLowerCase() || '';
-
-        const filteredComments = comments.filter(comment => {
-            const matchesStatus = statusFilter === 'all' || comment.status === statusFilter;
-            const matchesSearch = comment.text.toLowerCase().includes(searchText) ||
-                                comment.user.name.toLowerCase().includes(searchText);
-            return matchesStatus && matchesSearch;
-        });
-
-        const template = document.getElementById('commentRowTemplate').innerHTML;
-        tbody.innerHTML = filteredComments.map(comment => {
-            return template
-                .replace('${userName}', comment.user.name)
-                .replace('${placeName}', comment.place.name)
-                .replace('${comment}', comment.text)
-                .replace('${date}', new Date(comment.createdAt).toLocaleDateString())
-                .replace('${status}', comment.status)
-                .replace(/\${id}/g, comment._id);
-        }).join('');
-    }
-
-    function renderUsersTable() {
-        const tbody = document.getElementById('usersTableBody');
-        if (!tbody) return;
-
-        const statusFilter = document.getElementById('userStatusFilter')?.value || 'all';
-        const searchText = document.getElementById('searchUsers')?.value.toLowerCase() || '';
-
-        const filteredUsers = users.filter(user => {
-            const matchesStatus = statusFilter === 'all' || user.status === statusFilter;
-            const matchesSearch = user.name.toLowerCase().includes(searchText) ||
-                                user.email.toLowerCase().includes(searchText);
-            return matchesStatus && matchesSearch;
-        });
-
-        const template = document.getElementById('userRowTemplate').innerHTML;
-        tbody.innerHTML = filteredUsers.map(user => {
-            return template
-                .replace('${name}', user.name)
-                .replace('${registerDate}', new Date(user.createdAt).toLocaleDateString())
-                .replace('${commentCount}', user.commentCount || 0)
-                .replace('${status}', user.status)
-                .replace(/\${id}/g, user._id);
-        }).join('');
-    }
-    </script>
-
-    <!-- Önce config.js'i yükle -->
-    <script src="assets/js/config.js"></script>
+    <!-- Önce veri dosyalarını yükle -->
+    <script src="assets/js/data/comments.js"></script>
+    <script src="assets/js/data/users.js"></script>
     <!-- Sonra admin.js'i yükle -->
     <script src="assets/js/admin.js"></script>
 </body>
