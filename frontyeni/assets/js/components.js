@@ -49,18 +49,9 @@ function updateAuthUI() {
 
         // Profil dropdown menüsünü ayarla
         const profileButton = document.querySelector('.profile-button');
-        const dropdownMenu = document.querySelector('.dropdown-menu');
-        if (profileButton && dropdownMenu) {
-            profileButton.addEventListener('click', (e) => {
-                e.stopPropagation();
-                dropdownMenu.classList.toggle('show');
-            });
-
-            // Sayfa herhangi bir yerine tıklandığında dropdown'ı kapat
-            document.addEventListener('click', (e) => {
-                if (!profileButton.contains(e.target) && !dropdownMenu.contains(e.target)) {
-                    dropdownMenu.classList.remove('show');
-                }
+        if (profileButton) {
+            profileButton.addEventListener('click', () => {
+                window.location.href = 'profile.html';
             });
         }
 
@@ -73,7 +64,6 @@ function updateAuthUI() {
                 if (href) {
                     window.location.href = href;
                 }
-                dropdownMenu.classList.remove('show');
             });
         });
     } else {
