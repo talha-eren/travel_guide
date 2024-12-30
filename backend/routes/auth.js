@@ -13,14 +13,18 @@ router.post('/register', async (req, res) => {
             return res.status(400).json({ message: 'Bu email adresi zaten kullanılıyor.' });
         }
 
-        // Yeni kullanıcı oluşturma
-        const user = new User({
+        // Yeni kullanıcı dokümanı oluştur
+        const userDoc = {
             fullName,
             email,
-            password
-        });
+            password,
+            role: 'user',
+            favorites: [],
+            createdAt: new Date()
+        };
 
-        await user.save();
+        // Kullanıcıyı veritabanına kaydet
+        const user = await User.create(userDoc);
 
         // Token oluşturma
         const token = jwt.sign(
@@ -29,16 +33,19 @@ router.post('/register', async (req, res) => {
             { expiresIn: '24h' }
         );
 
+        // Yanıtı gönder
         res.status(201).json({
             message: 'Kayıt başarılı',
             token,
             user: {
                 id: user._id,
                 fullName: user.fullName,
-                email: user.email
+                email: user.email,
+                role: user.role
             }
         });
     } catch (error) {
+        console.error('Kayıt hatası:', error);
         res.status(500).json({ message: 'Sunucu hatası', error: error.message });
     }
 });
@@ -49,7 +56,7 @@ router.post('/login', async (req, res) => {
         const { email, password } = req.body;
 
         // Kullanıcı kontrolü
-        const user = await User.findOne({ email });
+        const user = await User.findOne({ email }).select('+role');
         if (!user) {
             return res.status(400).json({ message: 'Email veya şifre hatalı.' });
         }
@@ -67,16 +74,19 @@ router.post('/login', async (req, res) => {
             { expiresIn: '24h' }
         );
 
+        // Kullanıcı bilgilerini gönder
         res.json({
             message: 'Giriş başarılı',
             token,
             user: {
                 id: user._id,
                 fullName: user.fullName,
-                email: user.email
+                email: user.email,
+                role: user.role
             }
         });
     } catch (error) {
+        console.error('Login error:', error);
         res.status(500).json({ message: 'Sunucu hatası', error: error.message });
     }
 });
