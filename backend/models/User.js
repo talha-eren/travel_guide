@@ -18,15 +18,10 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    role: {
-        type: String,
-        enum: ['user', 'admin'],
-        default: 'user',
-        required: true
-    },
     favorites: [{
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Place'
+        ref: 'Place',
+        unique: true
     }],
     createdAt: {
         type: Date,
@@ -56,13 +51,4 @@ userSchema.methods.comparePassword = async function(candidatePassword) {
     }
 };
 
-// Kullanıcı dokümanını JSON'a çevirirken role alanını dahil et
-userSchema.set('toJSON', {
-    transform: function(doc, ret, options) {
-        ret.role = ret.role || 'user';
-        return ret;
-    }
-});
-
-const User = mongoose.model('User', userSchema);
-module.exports = User; 
+module.exports = mongoose.model('User', userSchema); 

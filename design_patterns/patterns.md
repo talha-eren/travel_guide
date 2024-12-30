@@ -3,43 +3,30 @@
 ## 1. MVC (Model-View-Controller) Pattern
 **Kullanım Amacı**: Veri, görünüm ve iş mantığını ayırmak.
 
-**Projemizdeki Detaylı Kullanımı**:
-- **Model**: `backend/models` klasöründeki User.js, Place.js gibi veri modellerimiz
-- **View**: `frontyeni` klasöründeki HTML dosyalarımız (profile.html, index.html vb.)
-- **Controller**: `backend/routes` klasöründeki route dosyalarımız (profile.js, auth.js vb.)
-- **Örnek**: Kullanıcı profil sayfasında, kullanıcı bilgileri User modelinde saklanıyor, profile.html'de görüntüleniyor ve profile.js route'unda işleniyor.
-
-**Projemizdeki Kullanım ve Kod Açıklaması**:
+**Projemizdeki Kullanım**:
 ```javascript
 // Model (backend/models/User.js)
-// Mongoose ve bcrypt modüllerini içe aktarıyoruz
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 
-// Kullanıcı şeması tanımlanıyor
 const userSchema = new mongoose.Schema({
-    // Kullanıcının tam adı - zorunlu alan
     fullName: {
         type: String,
         required: true
     },
-    // E-posta adresi - zorunlu ve benzersiz alan
     email: {
         type: String,
         required: true,
         unique: true
     },
-    // Şifre - zorunlu alan
     password: {
         type: String,
         required: true
     },
-    // E-posta doğrulama durumu - varsayılan olarak false
     isVerified: {
         type: Boolean,
         default: false
     },
-    // Hesap oluşturma tarihi - varsayılan olarak şu anki zaman
     createdAt: {
         type: Date,
         default: Date.now
@@ -47,34 +34,27 @@ const userSchema = new mongoose.Schema({
 });
 
 // View (frontyeni/profile.html)
-// Profil bilgilerini gösteren ve düzenlemeye izin veren form
 <div class="profile-section active" id="profile">
     <h2>Profil Bilgileri</h2>
     <form id="profileForm" class="profile-form">
-        <!-- Ad Soyad giriş alanı -->
         <div class="form-group">
             <label>Ad Soyad</label>
             <input type="text" id="fullName" name="fullName" required>
         </div>
-        <!-- E-posta giriş alanı -->
         <div class="form-group">
             <label>E-posta</label>
             <input type="email" id="email" name="email" required>
         </div>
-        <!-- Kaydet butonu -->
         <button type="submit" class="btn btn-primary">Değişiklikleri Kaydet</button>
     </form>
 </div>
 
 // Controller (backend/routes/profile.js)
-// Profil güncelleme route'u
 router.put('/update', authMiddleware, async (req, res) => {
     try {
-        // İstek gövdesinden kullanıcı bilgilerini al
         const { fullName, email } = req.body;
         const user = req.user;
 
-        // E-posta değişmişse, yeni e-postanın başka bir kullanıcıda olup olmadığını kontrol et
         if (email !== user.email) {
             const existingUser = await User.findOne({ email });
             if (existingUser) {
@@ -83,21 +63,17 @@ router.put('/update', authMiddleware, async (req, res) => {
             user.email = email;
         }
 
-        // Kullanıcı bilgilerini güncelle
         user.fullName = fullName;
         await user.save();
 
-        // Şifre hariç güncel kullanıcı bilgilerini döndür
         const updatedUser = user.toObject();
         delete updatedUser.password;
 
-        // Başarılı yanıt döndür
         res.json({
             message: 'Profil bilgileri başarıyla güncellendi',
             user: updatedUser
         });
     } catch (error) {
-        // Hata durumunda 500 hatası döndür
         res.status(500).json({ message: 'Sunucu hatası', error: error.message });
     }
 });
@@ -106,39 +82,30 @@ router.put('/update', authMiddleware, async (req, res) => {
 ## 2. Middleware Pattern
 **Kullanım Amacı**: İstek-yanıt döngüsünü kontrol etmek ve kimlik doğrulama.
 
-**Projemizdeki Detaylı Kullanımı**:
-- `backend/middleware` klasöründe bulunuyor
-- `authMiddleware`: Kullanıcı girişi kontrolü için her korumalı route'da kullanılıyor
-- Token kontrolü, kullanıcı doğrulama ve yetkilendirme işlemleri burada yapılıyor
-- **Örnek**: Profil güncelleme, şifre değiştirme gibi işlemlerde kullanıcının giriş yapmış olduğunu kontrol ediyoruz.
-
-**Projemizdeki Kullanım ve Kod Açıklaması**:
+**Projemizdeki Kullanım**:
 ```javascript
 // backend/routes/profile.js
-// Kimlik doğrulama middleware'i
 const authMiddleware = async (req, res, next) => {
     try {
-        // İstek header'ından Bearer token'ı al ve "Bearer " kısmını kaldır
+        // Token'ı header'dan al
         const token = req.header('Authorization')?.replace('Bearer ', '');
         if (!token) {
             return res.status(401).json({ message: 'Yetkilendirme hatası' });
         }
 
-        // JWT token'ı doğrula
+        // Token'ı doğrula
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         
-        // Token'dan alınan kullanıcı ID'si ile kullanıcıyı bul
+        // Kullanıcıyı bul
         const user = await User.findById(decoded.userId);
         if (!user) {
             return res.status(404).json({ message: 'Kullanıcı bulunamadı' });
         }
 
-        // Kullanıcı bilgisini request nesnesine ekle
+        // Kullanıcıyı request'e ekle
         req.user = user;
-        // Bir sonraki middleware'e veya route handler'a geç
         next();
     } catch (error) {
-        // Token geçersizse veya süresi dolmuşsa 401 hatası döndür
         res.status(401).json({ message: 'Yetkilendirme hatası', error: error.message });
     }
 };
@@ -147,51 +114,249 @@ const authMiddleware = async (req, res, next) => {
 ## 3. Module Pattern
 **Kullanım Amacı**: Kodun modüler ve bakımı kolay olması.
 
-**Projemizdeki Detaylı Kullanımı**:
-- `frontyeni/assets/js` klasöründeki her JavaScript dosyası ayrı bir modül
-- auth.js: Kimlik doğrulama işlemleri
-- profile.js: Profil yönetimi
-- components.js: Ortak bileşenler
-- **Örnek**: Giriş yapma, kayıt olma gibi işlemler auth.js modülünde toplanmış durumda.
-
-**Projemizdeki Kullanım ve Kod Açıklaması**:
+**Projemizdeki Kullanım**:
 ```javascript
 // frontyeni/assets/js/auth.js
-// API'nin temel URL'i
 const API_URL = 'http://localhost:5000/api';
 
-// Giriş yapma fonksiyonu
+// Login işlemi
 async function login(email, password) {
     try {
-        // API'ye POST isteği gönder
         const response = await fetch(`${API_URL}/auth/login`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            // Kullanıcı bilgilerini JSON formatında gönder
             body: JSON.stringify({ email, password })
         });
 
-        // API yanıtını JSON formatında al
         const data = await response.json();
 
-        // Yanıt başarısızsa hata fırlat
         if (!response.ok) {
             throw new Error(data.message || 'Giriş başarısız');
         }
 
-        // Token ve kullanıcı bilgilerini localStorage'a kaydet
         localStorage.setItem('token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
-        // Profil sayfasına yönlendir
         window.location.href = 'profile.html';
     } catch (error) {
-        // Hata durumunda konsola yaz ve kullanıcıya göster
         console.error('Login error:', error);
+        alert(error.message);
+    }
+}
+
+// frontyeni/assets/js/profile.js
+async function getProfile() {
+    try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = 'index.html';
+            return;
+        }
+
+        const response = await fetch(`${API_URL}/profile/me`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        const data = await response.json();
+        // ... form doldurma işlemleri
+    } catch (error) {
+        console.error('Profil bilgileri alınırken hata:', error);
         alert(error.message);
     }
 }
 ```
 
-// ... Diğer desenler için de benzer detaylı açıklamalar eklenecek ... 
+## 4. Observer Pattern
+**Kullanım Amacı**: DOM olaylarını dinlemek ve tepki vermek.
+
+**Projemizdeki Kullanım**:
+```javascript
+// frontyeni/assets/js/auth.js
+document.addEventListener('DOMContentLoaded', () => {
+    const loginForm = document.getElementById('loginForm');
+    const registerForm = document.getElementById('registerForm');
+
+    if (loginForm) {
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = e.target.querySelector('input[type="email"]').value;
+            const password = e.target.querySelector('input[type="password"]').value;
+            await login(email, password);
+        });
+    }
+
+    if (registerForm) {
+        registerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const fullName = e.target.querySelector('input[type="text"]').value;
+            const email = e.target.querySelector('input[type="email"]').value;
+            const password = e.target.querySelector('input[type="password"]').value;
+            await register(fullName, email, password);
+        });
+    }
+});
+```
+
+## 5. Singleton Pattern
+**Kullanım Amacı**: Uygulama genelinde tek bir veri deposu kullanmak.
+
+**Projemizdeki Kullanım**:
+```javascript
+// frontyeni/assets/js/auth.js ve profile.js'de localStorage kullanımı
+// Token saklama
+localStorage.setItem('token', data.token);
+const token = localStorage.getItem('token');
+
+// Kullanıcı bilgisi saklama
+localStorage.setItem('user', JSON.stringify(data.user));
+const user = JSON.parse(localStorage.getItem('user'));
+
+// Çıkış yapma
+localStorage.removeItem('token');
+localStorage.removeItem('user');
+```
+
+## 6. SOLID Prensipleri
+**Kullanım Amacı**: Kodun sürdürülebilir ve genişletilebilir olması.
+
+**Projemizdeki Kullanım**:
+```javascript
+// Single Responsibility Principle örneği:
+// backend/routes/auth.js - Sadece kimlik doğrulama işlemleri
+router.post('/register', async (req, res) => {
+    // Kayıt işlemleri
+});
+
+router.post('/login', async (req, res) => {
+    // Giriş işlemleri
+});
+
+// backend/routes/profile.js - Sadece profil işlemleri
+router.get('/me', authMiddleware, async (req, res) => {
+    // Profil getirme
+});
+
+router.put('/update', authMiddleware, async (req, res) => {
+    // Profil güncelleme
+});
+```
+
+## 7. Async/Await Pattern
+**Kullanım Amacı**: Asenkron işlemleri yönetmek.
+
+**Projemizdeki Kullanım**:
+```javascript
+// frontyeni/assets/js/profile.js
+async function updateProfile(event) {
+    event.preventDefault();
+
+    try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = 'index.html';
+            return;
+        }
+
+        const fullName = document.getElementById('fullName').value;
+        const email = document.getElementById('email').value;
+
+        const response = await fetch(`${API_URL}/profile/update`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ fullName, email })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.message || 'Profil güncellenemedi');
+        }
+
+        localStorage.setItem('user', JSON.stringify(data.user));
+        alert('Profil bilgileri başarıyla güncellendi');
+        window.location.reload();
+
+    } catch (error) {
+        console.error('Profil güncellenirken hata:', error);
+        alert(error.message);
+    }
+}
+```
+
+## 8. Factory Pattern
+**Kullanım Amacı**: Nesne oluşturma işlemlerini standartlaştırmak.
+
+**Projemizdeki Kullanım**:
+```javascript
+// backend/models/User.js
+const mongoose = require('mongoose');
+const userSchema = new mongoose.Schema({...});
+const User = mongoose.model('User', userSchema);
+
+// Kullanım
+const user = new User({
+    fullName: req.body.fullName,
+    email: req.body.email,
+    password: hashedPassword
+});
+```
+
+## 9. Strategy Pattern
+**Kullanım Amacı**: Farklı HTTP metodları için farklı stratejiler uygulamak.
+
+**Projemizdeki Kullanım**:
+```javascript
+// backend/routes/profile.js
+// Her HTTP metodu için farklı strateji
+router.get('/me', authMiddleware, async (req, res) => {
+    // GET stratejisi - Profil bilgilerini getir
+});
+
+router.put('/update', authMiddleware, async (req, res) => {
+    // PUT stratejisi - Profil bilgilerini güncelle
+});
+
+router.put('/change-password', authMiddleware, async (req, res) => {
+    // PUT stratejisi - Şifre değiştir
+});
+```
+
+## 10. Error Handling Pattern
+**Kullanım Amacı**: Hataları tutarlı bir şekilde yönetmek.
+
+**Projemizdeki Kullanım**:
+```javascript
+// Backend hata yönetimi (backend/routes/profile.js)
+try {
+    const { fullName, email } = req.body;
+    // ... işlemler
+} catch (error) {
+    res.status(500).json({ message: 'Sunucu hatası', error: error.message });
+}
+
+// Frontend hata yönetimi (frontyeni/assets/js/profile.js)
+try {
+    const response = await fetch(`${API_URL}/profile/me`);
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message);
+} catch (error) {
+    console.error('Profil bilgileri alınırken hata:', error);
+    alert(error.message);
+}
+```
+
+## Faydaları
+1. **Kod Organizasyonu**: Her dosya ve fonksiyon belirli bir sorumluluğa sahip
+2. **Bakım Kolaylığı**: Değişiklikler izole edilmiş, bir yerdeki değişiklik diğerlerini etkilemiyor
+3. **Test Edilebilirlik**: Her modül bağımsız olarak test edilebilir
+4. **Genişletilebilirlik**: Yeni özellikler (örn: yeni profil özellikleri) kolayca eklenebilir
+5. **Hata Yönetimi**: Hem backend hem frontend'de tutarlı hata yakalama
+6. **Performans**: Asenkron işlemler etkili bir şekilde yönetiliyor
+7. **Güvenlik**: Middleware ile merkezi yetkilendirme kontrolü
+8. **Kod Tekrarını Önleme**: Ortak fonksiyonlar (örn: auth middleware) tekrar kullanılıyor 

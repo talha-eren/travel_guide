@@ -17,13 +17,7 @@
             </div>
             <nav class="admin-nav">
                 <ul>
-                    <li>
-                        <a href="#" data-section="places">
-                            <i class="fas fa-map-marker-alt"></i>
-                            Mekan Yönetimi
-                        </a>
-                    </li>
-                    <li>
+                    <li class="active">
                         <a href="#" data-section="comments">
                             <i class="fas fa-comments"></i>
                             Yorum Yönetimi
@@ -47,46 +41,8 @@
 
         <!-- Ana İçerik -->
         <div class="admin-content">
-            <!-- Mekan Yönetimi Bölümü -->
-            <div class="admin-section" id="places-section">
-                <div class="section-header">
-                    <h2>Mekan Yönetimi</h2>
-                    <div class="filter-controls">
-                        <select id="categoryFilter" class="filter-select">
-                            <option value="all">Tüm Kategoriler</option>
-                            <option value="historical">Tarihi</option>
-                            <option value="nature">Doğal</option>
-                            <option value="cultural">Kültürel</option>
-                            <option value="other">Diğer</option>
-                        </select>
-                        <input type="text" id="searchPlaces" placeholder="Mekan ara..." class="search-input">
-                        <button class="add-button" onclick="openAddPlaceModal()">
-                            <i class="fas fa-plus"></i> Yeni Mekan Ekle
-                        </button>
-                    </div>
-                </div>
-
-                <div class="places-table">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Mekan Adı</th>
-                                <th>Kategori</th>
-                                <th>Şehir</th>
-                                <th>Adres</th>
-                                <th>Puan</th>
-                                <th>İşlemler</th>
-                            </tr>
-                        </thead>
-                        <tbody id="placesTableBody">
-                            <!-- Mekanlar JavaScript ile doldurulacak -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
             <!-- Yorum Yönetimi Bölümü -->
-            <div class="admin-section" id="comments-section">
+            <div class="admin-section active" id="comments-section">
                 <div class="section-header">
                     <h2>Yorum Yönetimi</h2>
                     <div class="filter-controls">
@@ -152,154 +108,7 @@
         </div>
     </div>
 
-    <!-- Mekan Ekleme/Düzenleme Modal -->
-    <div id="placeModal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <h2 id="modalTitle">Yeni Mekan Ekle</h2>
-            <form id="placeForm">
-                <div class="form-group">
-                    <label for="placeName">Mekan Adı:</label>
-                    <input type="text" id="placeName" name="name" required>
-                </div>
-                <div class="form-group">
-                    <label for="placeCategory">Kategori:</label>
-                    <select id="placeCategory" name="category" required>
-                        <option value="historical">Tarihi</option>
-                        <option value="nature">Doğal</option>
-                        <option value="cultural">Kültürel</option>
-                        <option value="other">Diğer</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="placeCity">Şehir:</label>
-                    <input type="text" id="placeCity" name="city_name" required>
-                </div>
-                <div class="form-group">
-                    <label for="placeAddress">Adres:</label>
-                    <textarea id="placeAddress" name="address" required></textarea>
-                </div>
-                <div class="form-group">
-                    <label for="placeDescription">Açıklama:</label>
-                    <textarea id="placeDescription" name="description" rows="4"></textarea>
-                </div>
-                <div class="form-group">
-                    <label>Çalışma Saatleri:</label>
-                    <div class="opening-hours-container">
-                        <div class="day-schedule">
-                            <label for="openingHoursPazartesi">Pazartesi:</label>
-                            <select id="openingHoursPazartesi" name="opening_hours[]" class="schedule-select">
-                                <option value="24 saat açık">24 saat açık</option>
-                                <option value="Kapalı">Kapalı</option>
-                                <option value="Özel saat">Özel saat</option>
-                            </select>
-                            <div class="custom-hours" style="display: none;">
-                                <input type="time" class="time-input start-time"> -
-                                <input type="time" class="time-input end-time">
-                            </div>
-                        </div>
-                        <div class="day-schedule">
-                            <label for="openingHoursSali">Salı:</label>
-                            <select id="openingHoursSali" name="opening_hours[]" class="schedule-select">
-                                <option value="24 saat açık">24 saat açık</option>
-                                <option value="Kapalı">Kapalı</option>
-                                <option value="Özel saat">Özel saat</option>
-                            </select>
-                            <div class="custom-hours" style="display: none;">
-                                <input type="time" class="time-input start-time"> -
-                                <input type="time" class="time-input end-time">
-                            </div>
-                        </div>
-                        <div class="day-schedule">
-                            <label for="openingHoursCarsamba">Çarşamba:</label>
-                            <select id="openingHoursCarsamba" name="opening_hours[]" class="schedule-select">
-                                <option value="24 saat açık">24 saat açık</option>
-                                <option value="Kapalı">Kapalı</option>
-                                <option value="Özel saat">Özel saat</option>
-                            </select>
-                            <div class="custom-hours" style="display: none;">
-                                <input type="time" class="time-input start-time"> -
-                                <input type="time" class="time-input end-time">
-                            </div>
-                        </div>
-                        <div class="day-schedule">
-                            <label for="openingHoursPersonbe">Perşembe:</label>
-                            <select id="openingHoursPersonbe" name="opening_hours[]" class="schedule-select">
-                                <option value="24 saat açık">24 saat açık</option>
-                                <option value="Kapalı">Kapalı</option>
-                                <option value="Özel saat">Özel saat</option>
-                            </select>
-                            <div class="custom-hours" style="display: none;">
-                                <input type="time" class="time-input start-time"> -
-                                <input type="time" class="time-input end-time">
-                            </div>
-                        </div>
-                        <div class="day-schedule">
-                            <label for="openingHoursCuma">Cuma:</label>
-                            <select id="openingHoursCuma" name="opening_hours[]" class="schedule-select">
-                                <option value="24 saat açık">24 saat açık</option>
-                                <option value="Kapalı">Kapalı</option>
-                                <option value="Özel saat">Özel saat</option>
-                            </select>
-                            <div class="custom-hours" style="display: none;">
-                                <input type="time" class="time-input start-time"> -
-                                <input type="time" class="time-input end-time">
-                            </div>
-                        </div>
-                        <div class="day-schedule">
-                            <label for="openingHoursCumartesi">Cumartesi:</label>
-                            <select id="openingHoursCumartesi" name="opening_hours[]" class="schedule-select">
-                                <option value="24 saat açık">24 saat açık</option>
-                                <option value="Kapalı">Kapalı</option>
-                                <option value="Özel saat">Özel saat</option>
-                            </select>
-                            <div class="custom-hours" style="display: none;">
-                                <input type="time" class="time-input start-time"> -
-                                <input type="time" class="time-input end-time">
-                            </div>
-                        </div>
-                        <div class="day-schedule">
-                            <label for="openingHoursPazar">Pazar:</label>
-                            <select id="openingHoursPazar" name="opening_hours[]" class="schedule-select">
-                                <option value="24 saat açık">24 saat açık</option>
-                                <option value="Kapalı">Kapalı</option>
-                                <option value="Özel saat">Özel saat</option>
-                            </select>
-                            <div class="custom-hours" style="display: none;">
-                                <input type="time" class="time-input start-time"> -
-                                <input type="time" class="time-input end-time">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group half">
-                        <label for="placeWebsite">Website:</label>
-                        <input type="url" id="placeWebsite" name="website">
-                    </div>
-                    <div class="form-group half">
-                        <label for="placePhone">Telefon:</label>
-                        <input type="tel" id="placePhone" name="phone_number">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="placeImages">Fotoğraf URL'leri (Her satıra bir URL):</label>
-                    <textarea id="placeImages" name="images" rows="3" placeholder="https://example.com/image1.jpg"></textarea>
-                </div>
-                <div class="form-group">
-                    <label for="placeMapLink">Harita Linki:</label>
-                    <input type="url" id="placeMapLink" name="map_link" placeholder="Google Maps linki">
-                </div>
-                <div class="form-actions">
-                    <button type="submit" class="save-button">Kaydet</button>
-                    <button type="button" class="cancel-button" onclick="closePlaceModal()">İptal</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
     <!-- Önce veri dosyalarını yükle -->
-    <script src="assets/js/data/places.js"></script>
     <script src="assets/js/data/comments.js"></script>
     <script src="assets/js/data/users.js"></script>
     <!-- Sonra admin.js'i yükle -->
