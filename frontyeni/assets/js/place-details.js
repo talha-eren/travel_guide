@@ -78,6 +78,38 @@ function fillPlaceDetails(place) {
         // Çalışma saatlerini ayarla
         setupOpeningHours(place.openingHours || null);
 
+        // Harita butonunu ekle
+        const locationCard = document.querySelector('.location-card');
+        if (locationCard) {
+            // Mevcut harita butonunu temizle
+            const existingButton = locationCard.querySelector('.map-button');
+            if (existingButton) {
+                existingButton.remove();
+            }
+
+            // Harita URL'sini kontrol et ve oluştur
+            let mapUrl = null;
+            
+            if (place.map_url) {
+                mapUrl = place.map_url;
+            } else if (place.google_maps_url) {
+                mapUrl = place.google_maps_url;
+            } else if (place.coordinates && place.coordinates.lat && place.coordinates.lng) {
+                mapUrl = `https://www.google.com/maps?q=${place.coordinates.lat},${place.coordinates.lng}`;
+            } else if (place.address) {
+                mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place.address)}`;
+            }
+
+            if (mapUrl) {
+                const mapButton = document.createElement('a');
+                mapButton.href = mapUrl;
+                mapButton.target = '_blank';
+                mapButton.className = 'map-button';
+                mapButton.innerHTML = '<i class="fas fa-map-marked-alt"></i> Haritada Göster';
+                locationCard.appendChild(mapButton);
+            }
+        }
+
     } catch (error) {
         console.error('Error filling place details:', error);
     }

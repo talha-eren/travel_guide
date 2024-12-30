@@ -1,12 +1,10 @@
 const mongoose = require('mongoose');
-
-// MongoDB Atlas bağlantı URL'i
-const MONGODB_URI = 'mongodb://localhost:27017/deneme';
+require('dotenv').config();
 
 async function showMaps() {
     try {
         // MongoDB'ye bağlan
-        await mongoose.connect(MONGODB_URI);
+        await mongoose.connect(process.env.MONGODB_URI);
         console.log('MongoDB bağlantısı başarılı\n');
 
         // Tüm mekanları al
@@ -19,11 +17,11 @@ async function showMaps() {
             console.log('-------------------------');
             console.log('Harita Bilgileri:');
             console.log(`- Map URL: ${place.map_url || 'Belirtilmemiş'}`);
+            console.log(`- Google Maps URL: ${place.google_maps_url || 'Belirtilmemiş'}`);
             console.log(`- Koordinatlar: ${place.coordinates ? `${place.coordinates.lat}, ${place.coordinates.lng}` : 'Belirtilmemiş'}`);
             console.log(`- Konum: ${place.location || 'Belirtilmemiş'}`);
             console.log(`- Adres: ${place.address || 'Belirtilmemiş'}`);
             console.log(`- Şehir: ${place.city || 'Belirtilmemiş'}`);
-            console.log(`- Google Maps URL: ${place.google_maps_url || 'Belirtilmemiş'}`);
             console.log('\n');
         });
 
