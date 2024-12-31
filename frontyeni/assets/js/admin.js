@@ -1,66 +1,43 @@
-// Global değişkenler
-if (!window.adminData) {
-    window.adminData = {
-        places: [],
-        comments: [],
-        users: [],
-        editingPlaceId: null
-    };
-}
-
-// Admin giriş işlemi
-function handleAdminLogin(e) {
-    e.preventDefault();
-    console.log('Login attempt started');
+// Admin giriş işlemleri
+document.addEventListener('DOMContentLoaded', function() {
+    const adminLoginForm = document.getElementById('adminLoginForm');
     
-    const email = document.getElementById('adminEmail').value;
-    const password = document.getElementById('adminPassword').value;
-    
-    console.log('Email:', email);
-    console.log('Password:', password);
-
-    // Test için basit kontrol
-    if (email === "admin@example.com" && password === "admin123") {
-        console.log('Test credentials matched');
-        localStorage.setItem('adminToken', 'test-admin-token');
-        window.location.href = 'admin-dashboard.html';
-        return;
+    if (adminLoginForm) {
+        adminLoginForm.addEventListener('submit', handleAdminLogin);
+    } else {
+        // Admin dashboard sayfasındayız
+        initializeAdminDashboard();
     }
 
-    // API ile giriş denemesi
-    fetch('http://localhost:5000/api/auth/admin/login', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ email, password })
-    })
-    .then(response => {
-        if (response.ok) {
-            return response.json();
-        }
-        throw new Error('Login failed');
-    })
-    .then(data => {
-        console.log('Login successful');
-        localStorage.setItem('adminToken', data.token);
-        window.location.href = 'admin-dashboard.html';
-    })
-    .catch(error => {
-        console.error('Login error:', error);
-        showNotification('Giriş yapılırken bir hata oluştu', 'error');
-    });
-}
+    // Eğer zaten giriş yapılmışsa yönlendir
+    checkAdminAuth();
+});
 
 // Admin girişini kontrol et
 function checkAdminAuth() {
     const adminToken = localStorage.getItem('adminToken');
-    const currentPath = window.location.pathname;
-    
-    if (adminToken && currentPath.includes('admin.html')) {
+    if (adminToken && window.location.pathname.endsWith('admin.html')) {
         window.location.href = 'admin-dashboard.html';
-    } else if (!adminToken && currentPath.includes('admin-dashboard.html')) {
+    } else if (!adminToken && !window.location.pathname.endsWith('admin.html')) {
         window.location.href = 'admin.html';
+    }
+}
+
+// Admin giriş işlemi
+async function handleAdminLogin(e) {
+    e.preventDefault();
+    
+    const email = document.getElementById('adminEmail').value;
+    const password = document.getElementById('adminPassword').value;
+
+    // Test için basit bir kontrol (gerçek uygulamada API'ye istek atılmalı)
+    if (email === 'admin@example.com' && password === 'admin123') {
+        // Giriş başarılı
+        localStorage.setItem('adminToken', 'test-admin-token');
+        window.location.href = 'admin-dashboard.html';
+    } else {
+        // Giriş başarısız
+        alert('Hatalı e-posta veya şifre!');
     }
 }
 
@@ -71,17 +48,8 @@ function handleAdminLogout() {
 }
 
 // Yardımcı fonksiyonlar
-function showNotification(message, type = 'success') {
-    const notification = document.createElement('div');
-    notification.className = `notification ${type}`;
-    notification.textContent = message;
-    
-    document.body.appendChild(notification);
-    
-    // 3 saniye sonra bildirimi kaldır
-    setTimeout(() => {
-        notification.remove();
-    }, 3000);
+function showNotification(message, type = 'info') {
+    alert(message); // Şimdilik basit bir alert
 }
 
 // Admin dashboard başlatma
@@ -96,10 +64,37 @@ function initializeAdminDashboard() {
         });
     });
 
-    // İlk yükleme
-    loadPlaces();
+    // Yorum filtreleme işlemleri
+    const statusFilter = document.getElementById('statusFilter');
+    const searchInput = document.getElementById('searchComments');
+
+    if (statusFilter) {
+        statusFilter.addEventListener('change', filterComments);
+    }
+
+    if (searchInput) {
+        searchInput.addEventListener('input', filterComments);
+    }
+
+    // Kullanıcı filtreleme işlemleri
+    const userStatusFilter = document.getElementById('userStatusFilter');
+    const searchUsers = document.getElementById('searchUsers');
+
+    if (userStatusFilter) {
+        userStatusFilter.addEventListener('change', filterUsers);
+    }
+
+    if (searchUsers) {
+        searchUsers.addEventListener('input', filterUsers);
+    }
+
+    // İlk yükleme - sadece yorumlar bölümünü göster
+    document.querySelectorAll('.admin-section').forEach(section => {
+        section.classList.remove('active');
+    });
+    document.getElementById('comments-section').classList.add('active');
     loadComments();
-    loadUsers();
+    loadUsers(); // Verileri yükle ama gösterme
 }
 
 // Bölüm değiştirme
@@ -419,214 +414,4 @@ function deleteUser(userId) {
 // Kullanıcıları filtrele
 function filterUsers() {
     loadUsers(); // Filtreleme loadUsers içinde yapılıyor
-}
-
-// Mekan Yönetimi Fonksiyonları
-
-// Mekanları yükle
-async function loadPlaces() {
-    try {
-        const response = await fetch('http://localhost:3000/api/places');
-        window.adminData.places = await response.json();
-        displayPlaces();
-    } catch (error) {
-        console.error('Mekanlar yüklenirken hata:', error);
-        showNotification('Mekanlar yüklenirken bir hata oluştu', 'error');
-    }
-}
-
-// Mekanları tabloda göster
-function displayPlaces(filteredPlaces = null) {
-    const placesTableBody = document.getElementById('placesTableBody');
-    const displayData = filteredPlaces || window.adminData.places;
-    
-    if (!placesTableBody) return;
-
-    placesTableBody.innerHTML = displayData.map(place => `
-        <tr>
-            <td>${place.name}</td>
-            <td>${translatePlaceType(place.type)}</td>
-            <td>${place.location}</td>
-            <td>${place.rating || 0}</td>
-            <td>${place.status === 'active' ? 'Aktif' : 'Pasif'}</td>
-            <td>
-                <button onclick="editPlace('${place._id}')" class="action-btn edit">
-                    <i class="fas fa-edit"></i>
-                </button>
-                <button onclick="deletePlace('${place._id}')" class="action-btn delete">
-                    <i class="fas fa-trash"></i>
-                </button>
-            </td>
-        </tr>
-    `).join('');
-}
-
-// Kategori çevirisi
-function translatePlaceType(type) {
-    const types = {
-        'restaurant': 'Restoran',
-        'historical': 'Tarihi Mekan',
-        'nature': 'Doğal Güzellik',
-        'museum': 'Müze'
-    };
-    return types[type] || type;
-}
-
-// Modal işlemleri
-function openAddPlaceModal() {
-    window.adminData.editingPlaceId = null;
-    document.getElementById('modalTitle').textContent = 'Yeni Mekan Ekle';
-    document.getElementById('placeForm').reset();
-    document.getElementById('placeModal').style.display = 'block';
-}
-
-function openEditPlaceModal(place) {
-    window.adminData.editingPlaceId = place._id;
-    document.getElementById('modalTitle').textContent = 'Mekan Düzenle';
-    
-    document.getElementById('placeName').value = place.name;
-    document.getElementById('placeType').value = place.type;
-    document.getElementById('placeLocation').value = place.location;
-    document.getElementById('placeDescription').value = place.description;
-    
-    document.getElementById('placeModal').style.display = 'block';
-}
-
-function closePlaceModal() {
-    document.getElementById('placeModal').style.display = 'none';
-    document.getElementById('placeForm').reset();
-    window.adminData.editingPlaceId = null;
-}
-
-// Mekan düzenleme
-async function editPlace(placeId) {
-    try {
-        const response = await fetch(`http://localhost:3000/api/places/${placeId}`);
-        const place = await response.json();
-        openEditPlaceModal(place);
-    } catch (error) {
-        console.error('Mekan bilgileri alınırken hata:', error);
-        showNotification('Mekan bilgileri alınamadı', 'error');
-    }
-}
-
-// Mekan silme
-async function deletePlace(placeId) {
-    if (!confirm('Bu mekanı silmek istediğinizden emin misiniz?')) return;
-
-    try {
-        await fetch(`http://localhost:3000/api/places/${placeId}`, {
-            method: 'DELETE',
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
-            }
-        });
-        
-        showNotification('Mekan başarıyla silindi', 'success');
-        loadPlaces();
-    } catch (error) {
-        console.error('Mekan silinirken hata:', error);
-        showNotification('Mekan silinirken bir hata oluştu', 'error');
-    }
-}
-
-// Form gönderimi
-document.getElementById('placeForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    
-    const formData = new FormData();
-    formData.append('name', document.getElementById('placeName').value);
-    formData.append('type', document.getElementById('placeType').value);
-    formData.append('location', document.getElementById('placeLocation').value);
-    formData.append('description', document.getElementById('placeDescription').value);
-    
-    const imageFiles = document.getElementById('placeImages').files;
-    for (let i = 0; i < imageFiles.length; i++) {
-        formData.append('images', imageFiles[i]);
-    }
-
-    try {
-        const url = window.adminData.editingPlaceId 
-            ? `http://localhost:3000/api/places/${window.adminData.editingPlaceId}`
-            : 'http://localhost:3000/api/places';
-            
-        const method = window.adminData.editingPlaceId ? 'PUT' : 'POST';
-        
-        const response = await fetch(url, {
-            method: method,
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
-            },
-            body: formData
-        });
-
-        if (response.ok) {
-            showNotification(
-                window.adminData.editingPlaceId ? 'Mekan başarıyla güncellendi' : 'Mekan başarıyla eklendi',
-                'success'
-            );
-            closePlaceModal();
-            loadPlaces();
-        } else {
-            throw new Error('İşlem başarısız');
-        }
-    } catch (error) {
-        console.error('Mekan kaydedilirken hata:', error);
-        showNotification('Mekan kaydedilirken bir hata oluştu', 'error');
-    }
-});
-
-// Arama ve filtreleme
-document.getElementById('searchPlaces').addEventListener('input', (e) => {
-    const searchTerm = e.target.value.toLowerCase();
-    const typeFilter = document.getElementById('placeTypeFilter').value;
-    
-    const filteredPlaces = window.adminData.places.filter(place => {
-        const matchesSearch = place.name.toLowerCase().includes(searchTerm) ||
-                            place.location.toLowerCase().includes(searchTerm);
-        const matchesType = typeFilter === 'all' || place.type === typeFilter;
-        
-        return matchesSearch && matchesType;
-    });
-    
-    displayPlaces(filteredPlaces);
-});
-
-document.getElementById('placeTypeFilter').addEventListener('change', (e) => {
-    const typeFilter = e.target.value;
-    const searchTerm = document.getElementById('searchPlaces').value.toLowerCase();
-    
-    const filteredPlaces = window.adminData.places.filter(place => {
-        const matchesSearch = place.name.toLowerCase().includes(searchTerm) ||
-                            place.location.toLowerCase().includes(searchTerm);
-        const matchesType = typeFilter === 'all' || place.type === typeFilter;
-        
-        return matchesSearch && matchesType;
-    });
-    
-    displayPlaces(filteredPlaces);
-});
-
-// Sayfa yüklendiğinde
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('DOM Content Loaded');
-    
-    // Admin giriş formunu kontrol et
-    const adminLoginForm = document.getElementById('adminLoginForm');
-    if (adminLoginForm) {
-        console.log('Admin login form found');
-        adminLoginForm.addEventListener('submit', handleAdminLogin);
-        console.log('Admin login form event listener added');
-    } else {
-        console.log('Admin login form not found');
-    }
-
-    // Auth kontrolü
-    checkAdminAuth();
-
-    // Admin dashboard sayfasındaysak
-    if (window.location.pathname.includes('admin-dashboard.html')) {
-        console.log('Initializing admin dashboard');
-        initializeAdminDashboard();
-    }
-}); 
+} 

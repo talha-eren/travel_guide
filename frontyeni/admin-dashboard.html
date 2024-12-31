@@ -17,13 +17,7 @@
             </div>
             <nav class="admin-nav">
                 <ul>
-                    <li>
-                        <a href="#" data-section="places">
-                            <i class="fas fa-map-marker-alt"></i>
-                            Mekan Yönetimi
-                        </a>
-                    </li>
-                    <li>
+                    <li class="active">
                         <a href="#" data-section="comments">
                             <i class="fas fa-comments"></i>
                             Yorum Yönetimi
@@ -36,7 +30,7 @@
                         </a>
                     </li>
                     <li>
-                        <a href="#" id="logoutBtn">
+                        <a href="#" onclick="handleAdminLogout()">
                             <i class="fas fa-sign-out-alt"></i>
                             Çıkış Yap
                         </a>
@@ -47,59 +41,6 @@
 
         <!-- Ana İçerik -->
         <div class="admin-content">
-            <!-- Mekan Yönetimi Bölümü -->
-            <div class="admin-section" id="places-section">
-                <div class="section-header">
-                    <div class="header-left">
-                        <h2><i class="fas fa-map-marker-alt"></i> Mekan Yönetimi</h2>
-                        <p class="section-description">Sistemdeki tüm mekanları yönetin</p>
-                    </div>
-                    <div class="header-actions">
-                        <button class="add-place-btn" onclick="openAddPlaceModal()">
-                            <i class="fas fa-plus"></i> Yeni Mekan Ekle
-                        </button>
-                    </div>
-                </div>
-
-                <div class="filter-controls">
-                    <div class="search-box">
-                        <i class="fas fa-search"></i>
-                        <input type="text" id="searchPlaces" placeholder="Mekan ara..." class="search-input">
-                    </div>
-                    <div class="filter-group">
-                        <select id="placeTypeFilter" class="filter-select">
-                            <option value="all">Tüm Kategoriler</option>
-                            <option value="tarihi">Tarihi Mekanlar</option>
-                            <option value="dogal">Doğal Güzellikler</option>
-                            <option value="kulturel">Kültürel Mekanlar</option>
-                            <option value="eglence">Eğlence Mekanları</option>
-                            <option value="yeme-icme">Yeme-İçme Mekanları</option>
-                        </select>
-                        <select id="cityFilter" class="filter-select">
-                            <option value="all">Tüm Şehirler</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="places-table-container">
-                    <table class="places-table">
-                        <thead>
-                            <tr>
-                                <th>Mekan Adı</th>
-                                <th>Kategori</th>
-                                <th>Şehir</th>
-                                <th>Değerlendirme</th>
-                                <th>Durum</th>
-                                <th>İşlemler</th>
-                            </tr>
-                        </thead>
-                        <tbody id="placesTableBody">
-                            <!-- Mekanlar JavaScript ile doldurulacak -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
             <!-- Yorum Yönetimi Bölümü -->
             <div class="admin-section active" id="comments-section">
                 <div class="section-header">
@@ -167,77 +108,10 @@
         </div>
     </div>
 
-    <!-- Mekan Ekleme/Düzenleme Modal -->
-    <div id="placeModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 id="modalTitle">Yeni Mekan Ekle</h2>
-                <button class="close" onclick="closePlaceModal()">&times;</button>
-            </div>
-            <form id="placeForm" class="place-form">
-                <div class="form-group">
-                    <label for="placeName">Mekan Adı <span class="required">*</span></label>
-                    <input type="text" id="placeName" required>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="placeType">Kategori <span class="required">*</span></label>
-                        <select id="placeType" required>
-                            <option value="">Kategori Seçin</option>
-                            <option value="tarihi">Tarihi Mekan</option>
-                            <option value="dogal">Doğal Güzellik</option>
-                            <option value="kulturel">Kültürel Mekan</option>
-                            <option value="eglence">Eğlence Mekanı</option>
-                            <option value="yeme-icme">Yeme-İçme Mekanı</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="placeCity">Şehir <span class="required">*</span></label>
-                        <input type="text" id="placeCity" required>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="placeAddress">Adres <span class="required">*</span></label>
-                    <input type="text" id="placeAddress" required>
-                </div>
-                <div class="form-group">
-                    <label for="placeDescription">Açıklama <span class="required">*</span></label>
-                    <textarea id="placeDescription" rows="4" required></textarea>
-                </div>
-                <div class="form-group">
-                    <label for="placeImages">Görseller</label>
-                    <div class="image-upload-container">
-                        <input type="file" id="placeImages" multiple accept="image/*">
-                        <div class="upload-placeholder">
-                            <i class="fas fa-cloud-upload-alt"></i>
-                            <p>Görselleri sürükleyin veya seçin</p>
-                            <span class="upload-info">Maximum 5 görsel, her biri en fazla 2MB</span>
-                        </div>
-                    </div>
-                    <div id="imagePreviewContainer" class="image-preview-container"></div>
-                </div>
-                <div class="form-actions">
-                    <button type="button" class="btn-secondary" onclick="closePlaceModal()">İptal</button>
-                    <button type="submit" class="btn-primary">
-                        <i class="fas fa-save"></i> Kaydet
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Önce admin.js'i yükle -->
-    <script src="assets/js/admin.js"></script>
-    <!-- Sonra veri dosyalarını yükle -->
-    <script src="assets/js/data/places.js"></script>
+    <!-- Önce veri dosyalarını yükle -->
     <script src="assets/js/data/comments.js"></script>
     <script src="assets/js/data/users.js"></script>
-    <script>
-        // Çıkış yapma butonuna event listener ekle
-        document.getElementById('logoutBtn').addEventListener('click', function(e) {
-            e.preventDefault();
-            handleAdminLogout();
-        });
-    </script>
+    <!-- Sonra admin.js'i yükle -->
+    <script src="assets/js/admin.js"></script>
 </body>
 </html> 
