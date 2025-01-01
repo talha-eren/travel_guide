@@ -61,25 +61,43 @@ document.addEventListener('DOMContentLoaded', async () => {
 // Şehirleri yükle
 async function loadCities() {
     try {
+        const cityFilter = document.getElementById('cityFilter');
+        if (cityFilter) {
+            // Loading durumunu göster
+            cityFilter.innerHTML = '<option value="">Yükleniyor...</option>';
+            cityFilter.disabled = true;
+        }
+
         const response = await fetch(`${API_URL}/places/cities`);
         if (!response.ok) {
             throw new Error('Şehirler yüklenemedi');
         }
 
         const data = await response.json();
-        const cityFilter = document.getElementById('cityFilter');
         
         if (cityFilter && data.cities) {
+            // Şehirleri alfabetik sıraya diz
+            const sortedCities = data.cities.sort((a, b) => 
+                a.localeCompare(b, 'tr', { sensitivity: 'base' })
+            );
+
             cityFilter.innerHTML = `
                 <option value="">Tüm Şehirler</option>
-                ${data.cities.map(city => `
+                ${sortedCities.map(city => `
                     <option value="${city}">${city}</option>
                 `).join('')}
             `;
+            cityFilter.disabled = false;
         }
     } catch (error) {
         console.error('Error loading cities:', error);
         showError('Şehirler yüklenirken bir hata oluştu');
+        
+        const cityFilter = document.getElementById('cityFilter');
+        if (cityFilter) {
+            cityFilter.innerHTML = '<option value="">Şehirler yüklenemedi</option>';
+            cityFilter.disabled = true;
+        }
     }
 }
 

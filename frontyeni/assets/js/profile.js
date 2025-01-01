@@ -35,6 +35,10 @@ async function getProfile() {
             profileEmail.textContent = user.email || '';
         }
 
+        // İlk yükleme için favori ve yorumları getir
+        await loadUserFavorites();
+        await loadUserComments();
+
     } catch (error) {
         console.error('Profil bilgileri alınırken hata:', error);
         showNotification('Profil bilgileri alınamadı', 'error');
@@ -171,6 +175,13 @@ function switchTab(tabId) {
     const selectedTab = document.querySelector(`.profile-nav li[data-tab="${tabId}"]`);
     if (selectedTab) {
         selectedTab.classList.add('active');
+    }
+
+    // Tab içeriğini yükle
+    if (tabId === 'favorites') {
+        loadUserFavorites();
+    } else if (tabId === 'comments') {
+        loadUserComments();
     }
 }
 
@@ -347,8 +358,37 @@ async function loadTabContent(tabId) {
     }
 }
 
-// Sayfa yüklendiğinde
-document.addEventListener('DOMContentLoaded', async () => {
+// Çıkış yap fonksiyonu
+function logout() {
+    // Çıkış yapılıyor bildirimi göster
+    showNotification('Başarıyla çıkış yapıldı', 'success');
+    
+    // Kısa bir gecikme ile yönlendirme yap (bildirimin görünmesi için)
+    setTimeout(() => {
+        // LocalStorage'dan kullanıcı bilgilerini temizle
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        
+        // Ana sayfaya yönlendir
+        window.location.href = 'index.html';
+    }, 1000);
+}
+
+// URL parametrelerini kontrol et ve ilgili sekmeyi aç
+function checkUrlParams() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const tab = urlParams.get('tab');
+    
+    if (tab) {
+        switchTab(tab);
+    } else {
+        // Varsayılan olarak profil sekmesini aç
+        switchTab('profile');
+    }
+}
+
+// Event Listeners
+document.addEventListener('DOMContentLoaded', () => {
     // Auth kontrolü
     if (!checkAuth()) {
         window.location.href = 'index.html';
@@ -356,30 +396,40 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // Profil bilgilerini yükle
-    await getProfile();
+    getProfile();
 
-    // Form submit event listener'ları
-    const profileForm = document.getElementById('profileForm');
-    const passwordForm = document.getElementById('passwordForm');
+    // URL parametrelerini kontrol et
+    checkUrlParams();
 
-    profileForm?.addEventListener('submit', updateProfile);
-    passwordForm?.addEventListener('submit', changePassword);
-
-    // Tab değiştirme event listener'ı
-    const tabButtons = document.querySelectorAll('.profile-nav li');
-    tabButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            const tabId = button.getAttribute('data-tab');
+    // Tab değiştirme event listener'ları
+    document.querySelectorAll('.profile-nav li').forEach(li => {
+        li.addEventListener('click', () => {
+            const tabId = li.getAttribute('data-tab');
             if (tabId) {
+                // URL'i güncelle
+                const newUrl = new URL(window.location.href);
+                newUrl.searchParams.set('tab', tabId);
+                window.history.pushState({}, '', newUrl);
+                
                 switchTab(tabId);
-                loadTabContent(tabId);
             }
         });
     });
 
-    // URL'den tab kontrolü
-    const urlParams = new URLSearchParams(window.location.search);
-    const activeTab = urlParams.get('tab') || 'profile';
-    switchTab(activeTab);
-    loadTabContent(activeTab);
+    // Form submit event listener'ları
+    const profileForm = document.getElementById('profileForm');
+    if (profileForm) {
+        profileForm.addEventListener('submit', updateProfile);
+    }
+
+    const passwordForm = document.getElementById('passwordForm');
+    if (passwordForm) {
+        passwordForm.addEventListener('submit', changePassword);
+    }
+
+    // Çıkış yapma butonu
+    const logoutButton = document.getElementById('logoutButton');
+    if (logoutButton) {
+        logoutButton.addEventListener('click', logout);
+    }
 }); 

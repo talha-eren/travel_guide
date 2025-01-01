@@ -32,6 +32,7 @@ async function loadComponents() {
 function setupProfileDropdown() {
     const profileButton = document.querySelector('.profile-button');
     const dropdownMenu = document.querySelector('.dropdown-menu');
+    const logoutBtn = document.getElementById('logoutBtn');
     
     if (profileButton && dropdownMenu) {
         // Tıklama olayını dinle
@@ -47,8 +48,41 @@ function setupProfileDropdown() {
             }
         });
 
+        // Çıkış yapma işlemini ayarla
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', async (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+
+                try {
+                    // Kullanıcı bilgilerini al
+                    const user = JSON.parse(localStorage.getItem('user') || '{}');
+                    const userName = user.fullName || 'Kullanıcı';
+
+                    // Token ve kullanıcı bilgilerini sil
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('user');
+
+                    // Auth durumu değişti event'ini tetikle
+                    const event = new Event('authStateChanged');
+                    document.dispatchEvent(event);
+
+                    // Çıkış bildirimi göster
+                    showNotification(`Görüşmek üzere, ${userName}! Başarıyla çıkış yapıldı.`, 'success');
+
+                    // Bildirim görüldükten sonra sayfayı yenile
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1500);
+                } catch (error) {
+                    console.error('Logout error:', error);
+                    showNotification('Çıkış yapılırken bir hata oluştu', 'error');
+                }
+            });
+        }
+
         // Menü öğelerine tıklama olaylarını ekle
-        const menuItems = dropdownMenu.querySelectorAll('a');
+        const menuItems = dropdownMenu.querySelectorAll('a:not(#logoutBtn)');
         menuItems.forEach(item => {
             item.addEventListener('click', (e) => {
                 e.preventDefault();
@@ -112,4 +146,78 @@ function getInitials(name) {
 document.addEventListener('DOMContentLoaded', loadComponents);
 
 // Auth durumu değiştiğinde UI'ı güncelle
-document.addEventListener('authStateChanged', updateAuthUI); 
+document.addEventListener('authStateChanged', updateAuthUI);
+
+// Dropdown menüyü aç/kapat
+document.addEventListener('click', (e) => {
+    const dropdownButton = e.target.closest('.profile-button');
+    const dropdownMenu = document.querySelector('.dropdown-menu');
+    
+    if (dropdownButton) {
+        dropdownMenu?.classList.toggle('show');
+        const chevron = dropdownButton.querySelector('.fa-chevron-down');
+        if (chevron) {
+            chevron.style.transform = dropdownMenu?.classList.contains('show') ? 'rotate(180deg)' : 'rotate(0)';
+        }
+    } else if (!e.target.closest('.dropdown-menu')) {
+        dropdownMenu?.classList.remove('show');
+        const chevron = document.querySelector('.profile-button .fa-chevron-down');
+        if (chevron) {
+            chevron.style.transform = 'rotate(0)';
+        }
+    }
+});
+
+// Bildirim göster
+function showNotification(message, type = 'info') {
+    // Varolan bildirimi kaldır
+    const existingNotification = document.querySelector('.notification');
+    if (existingNotification) {
+        existingNotification.remove();
+    }
+
+    // Yeni bildirimi oluştur
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.style.opacity = '0'; // Başlangıçta görünmez
+
+    // İkon ekle
+    const icon = document.createElement('i');
+    if (type === 'success') {
+        icon.className = 'fas fa-check-circle';
+    } else if (type === 'error') {
+        icon.className = 'fas fa-exclamation-circle';
+    } else if (type === 'warning') {
+        icon.className = 'fas fa-exclamation-triangle';
+    } else {
+        icon.className = 'fas fa-info-circle';
+    }
+    icon.style.marginRight = '10px';
+
+    // Mesaj container'ı
+    const messageDiv = document.createElement('div');
+    messageDiv.textContent = message;
+    messageDiv.style.flex = '1';
+
+    // Bildirimi oluştur
+    notification.appendChild(icon);
+    notification.appendChild(messageDiv);
+
+    // Bildirimi ekle
+    document.body.appendChild(notification);
+
+    // Animasyon için setTimeout kullan
+    setTimeout(() => {
+        notification.style.opacity = '1';
+    }, 100);
+
+    // 2 saniye sonra kaldır
+    setTimeout(() => {
+        notification.style.opacity = '0';
+        setTimeout(() => {
+            if (notification && notification.parentElement) {
+                notification.remove();
+            }
+        }, 500);
+    }, 2000);
+} 

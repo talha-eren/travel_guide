@@ -22,8 +22,16 @@
             padding: 15px 25px;
             border-radius: 4px;
             color: white;
-            z-index: 1000;
-            animation: slideIn 0.5s ease-out;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            opacity: 1;
+            transition: opacity 0.5s ease-in-out;
+            min-width: 300px;
+            max-width: 400px;
+            animation: slideIn 0.5s ease-out forwards;
         }
 
         .notification.success {
@@ -38,6 +46,14 @@
             background-color: #2196F3;
         }
 
+        .notification.warning {
+            background-color: #ff9800;
+        }
+
+        .notification i {
+            font-size: 20px;
+        }
+
         @keyframes slideIn {
             from {
                 transform: translateX(100%);
@@ -46,6 +62,17 @@
             to {
                 transform: translateX(0);
                 opacity: 1;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .notification {
+                top: auto;
+                bottom: 20px;
+                left: 20px;
+                right: 20px;
+                min-width: auto;
+                max-width: none;
             }
         }
     </style>
@@ -124,21 +151,21 @@
                         <i class="fas fa-map-marker-alt"></i>
                         <div>
                             <h3>Adres</h3>
-                            <p>İstanbul, Türkiye</p>
+                            <p>Elazığ, Türkiye</p>
                         </div>
                     </div>
                     <div class="info-item">
                         <i class="fas fa-envelope"></i>
                         <div>
                             <h3>E-posta</h3>
-                            <p>info@gezilecekyer.com</p>
+                            <p>220541071@firat.edu.tr</p>
                         </div>
                     </div>
                     <div class="info-item">
                         <i class="fas fa-phone"></i>
                         <div>
                             <h3>Telefon</h3>
-                            <p>+90 212 123 45 67</p>
+                            <p>0551 192 7123</p>
                         </div>
                     </div>
                 </div>

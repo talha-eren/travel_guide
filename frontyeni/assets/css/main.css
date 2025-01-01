@@ -1792,27 +1792,54 @@ footer {
 }
 
 .filter-select {
-    padding: 0.5rem;
+    padding: 10px 15px;
     border: 1px solid #ddd;
     border-radius: 4px;
-    background-color: white;
-    font-size: 0.9rem;
-    min-width: 200px;
+    font-size: 16px;
+    color: #333;
+    background-color: #fff;
+    width: 200px;
     cursor: pointer;
+    transition: all 0.3s ease;
 }
 
-.filter-checkbox {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    cursor: pointer;
-    user-select: none;
+.filter-select:hover {
+    border-color: #007bff;
 }
 
-.filter-checkbox input[type="checkbox"] {
-    width: 16px;
-    height: 16px;
-    cursor: pointer;
+.filter-select:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+}
+
+.filter-select:disabled {
+    background-color: #f5f5f5;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.filter-select option {
+    padding: 10px;
+}
+
+/* Özel scrollbar stilleri */
+.filter-select::-webkit-scrollbar {
+    width: 8px;
+}
+
+.filter-select::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.filter-select::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+.filter-select::-webkit-scrollbar-thumb:hover {
+    background: #555;
 }
 
 /* Responsive tasarım için */
@@ -2983,9 +3010,15 @@ main {
     padding: 15px 25px;
     border-radius: 4px;
     color: white;
-    font-weight: 500;
     z-index: 9999;
-    animation: slideIn 0.3s ease-out;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    opacity: 1;
+    transition: opacity 0.5s ease-in-out;
+    min-width: 300px;
+    max-width: 400px;
 }
 
 .notification.success {
@@ -3004,6 +3037,10 @@ main {
     background-color: #ff9800;
 }
 
+.notification i {
+    font-size: 20px;
+}
+
 @keyframes slideIn {
     from {
         transform: translateX(100%);
@@ -3013,7 +3050,22 @@ main {
         transform: translateX(0);
         opacity: 1;
     }
-} 
+}
+
+.notification {
+    animation: slideIn 0.5s ease-out forwards;
+}
+
+@media (max-width: 768px) {
+    .notification {
+        top: auto;
+        bottom: 20px;
+        left: 20px;
+        right: 20px;
+        min-width: auto;
+        max-width: none;
+    }
+}
 
 /* Görsel Galerisi Stilleri */
 #imageGallery {
@@ -3314,13 +3366,23 @@ main {
 }
 
 .profile-nav li.active {
-    background: #e74c3c;
+    background-color: #007bff;
     color: white;
 }
 
 .profile-nav li:hover:not(.active) {
-    background: #f8f9fa;
-    color: #e74c3c;
+    background-color: #f8f9fa;
+}
+
+.profile-nav li.logout-button {
+    margin-top: auto;
+    background-color: #dc3545;
+    color: white;
+}
+
+.profile-nav li.logout-button:hover {
+    background-color: #c82333;
+    cursor: pointer;
 }
 
 /* Profil İçerik Alanı */

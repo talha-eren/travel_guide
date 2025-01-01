@@ -107,5 +107,46 @@
 
     <!-- Include footer component -->
     <div id="footer"></div>
+
+    <!-- Modallar -->
+    <div id="modals">
+        <!-- Giriş Modalı -->
+        <div id="loginModal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2>Giriş Yap</h2>
+                <form id="loginForm">
+                    <input type="email" id="loginEmail" name="email" placeholder="E-posta" required>
+                    <input type="password" id="loginPassword" name="password" placeholder="Şifre" required>
+                    <button type="submit" class="btn">Giriş Yap</button>
+                    <p class="form-footer">Hesabınız yok mu? <a href="#" id="switchToRegister">Kayıt Olun</a></p>
+                </form>
+            </div>
+        </div>
+
+        <!-- Kayıt Modalı -->
+        <div id="registerModal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2>Kayıt Ol</h2>
+                <form id="registerForm">
+                    <input type="text" id="registerFullName" name="fullName" placeholder="Ad Soyad" required>
+                    <input type="email" id="registerEmail" name="email" placeholder="E-posta" required>
+                    <input type="password" id="registerPassword" name="password" placeholder="Şifre" required>
+                    <input type="password" id="registerPasswordConfirm" name="passwordConfirm" placeholder="Şifre Tekrar" required>
+                    <button type="submit" class="btn">Kayıt Ol</button>
+                    <p class="form-footer">Zaten hesabınız var mı? <a href="#" id="switchToLogin">Giriş Yapın</a></p>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Files -->
+    <script src="assets/js/config.js"></script>
+    <script src="assets/js/main.js"></script>
+    <script src="assets/js/components.js"></script>
+    <script src="assets/js/auth.js"></script>
+    <script src="assets/js/places.js"></script>
+    <script src="assets/js/place-details.js"></script>
 </body>
 </html> 
