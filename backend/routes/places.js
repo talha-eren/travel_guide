@@ -8,7 +8,7 @@ const User = require('../models/User');
 // Tüm şehirleri getir
 router.get('/cities', async (req, res) => {
     try {
-        const cities = await Place.distinct('city');
+        const cities = await Place.distinct('city_name');
         res.json({ cities });
     } catch (error) {
         console.error('Error fetching cities:', error);
@@ -19,12 +19,12 @@ router.get('/cities', async (req, res) => {
 // Tüm mekanları getir (filtreleme ve arama ile)
 router.get('/', async (req, res) => {
     try {
-        const { page = 1, limit = 12, category, city, search } = req.query;
+        const { page = 1, limit = 12, category, city_name, search } = req.query;
         const query = {};
 
         // Filtreleri ekle
         if (category) query.category = category;
-        if (city) query.city = city;
+        if (city_name) query.city_name = city_name;
         if (search) {
             query.$or = [
                 { name: { $regex: search, $options: 'i' } },

@@ -117,7 +117,7 @@ async function fetchPlaces() {
 
         // Filtreleri ekle
         if (currentFilters.city) {
-            params.append('city', currentFilters.city);
+            params.append('city_name', currentFilters.city);
         }
         if (currentFilters.search) {
             params.append('search', currentFilters.search);
@@ -320,7 +320,7 @@ function createFavoriteCard(place) {
                 <h3>${place.name || 'İsimsiz Mekan'}</h3>
                 <div class="place-meta">
                     <span><i class="fas fa-tag"></i> ${place.category || 'Kategori Belirtilmemiş'}</span>
-                    <span><i class="fas fa-map-marker-alt"></i> ${place.city || 'Şehir Belirtilmemiş'}</span>
+                    <span><i class="fas fa-map-marker-alt"></i> ${place.city_name || 'Şehir Belirtilmemiş'}</span>
                 </div>
                 <div class="card-actions">
                     <a href="place-details.html?id=${place._id}" class="btn btn-primary">
@@ -363,7 +363,7 @@ function createCommentCard(comment) {
                     <h3>${comment.place.name || 'İsimsiz Mekan'}</h3>
                     <div class="place-meta">
                         <span><i class="fas fa-tag"></i> ${comment.place.category || 'Kategori Belirtilmemiş'}</span>
-                        <span><i class="fas fa-map-marker-alt"></i> ${comment.place.city || 'Şehir Belirtilmemiş'}</span>
+                        <span><i class="fas fa-map-marker-alt"></i> ${comment.place.city_name || 'Şehir Belirtilmemiş'}</span>
                     </div>
                 </div>
                 <div class="comment-details">
