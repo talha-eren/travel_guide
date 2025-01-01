@@ -60,8 +60,7 @@ function fillPlaceDetails(place) {
     try {
         // Temel bilgileri doldur
         document.getElementById('placeName').textContent = place.name || 'İsimsiz Mekan';
-        document.getElementById('placeCategory').textContent = place.category || 'Kategori Belirtilmemiş';
-        document.getElementById('placeCity').textContent = place.city || 'Şehir Belirtilmemiş';
+        document.getElementById('placeCity').textContent = place.city_name || 'Şehir Belirtilmemiş';
         document.getElementById('placeDescription').textContent = place.description || 'Açıklama bulunmuyor';
         document.getElementById('placeAddress').textContent = place.address || 'Adres belirtilmemiş';
         document.getElementById('placeTotalRatings').textContent = place.totalRatings || 0;

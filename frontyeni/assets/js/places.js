@@ -211,8 +211,7 @@ function createPlaceCard(place) {
                     <span>(${place.totalRatings || 0} değerlendirme)</span>
                 </div>
                 <div class="place-meta">
-                    <span><i class="fas fa-tag"></i> ${place.category || 'Kategori Belirtilmemiş'}</span>
-                    <span><i class="fas fa-map-marker-alt"></i> ${place.city || 'Şehir Belirtilmemiş'}</span>
+                    <span><i class="fas fa-map-marker-alt"></i> ${place.city_name || 'Şehir Belirtilmemiş'}</span>
                 </div>
                 <p class="place-description">${place.description || 'Açıklama bulunmuyor'}</p>
                 <div class="card-actions">
