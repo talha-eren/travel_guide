@@ -1,31 +1,31 @@
 <nav class="navbar">
     <div class="logo">
-        <h1>Gezi Rehberi</h1>
-    </div>
-    <div class="search-container">
-        <input type="text" id="searchInput" placeholder="Şehir ara...">
-        <button class="search-btn"><i class="fas fa-search"></i></button>
+        <h1><a href="index.html">Travel Guide</a></h1>
     </div>
     <ul class="nav-links">
         <li><a href="index.html">Ana Sayfa</a></li>
         <li><a href="index.html#destinations">Mekanlar</a></li>
-        <li><a href="index.html#about">Hakkında</a></li>
+        <li><a href="index.html#about">Hakkımızda</a></li>
         <li><a href="index.html#contact">İletişim</a></li>
-        <li class="user-menu guest-menu">
-            <a href="#" id="loginBtn">Giriş Yap</a>
-            <a href="#" id="registerBtn">Kayıt Ol</a>
-        </li>
-        <li class="user-menu logged-in-menu" style="display: none;">
+    </ul>
+    <div class="auth-buttons">
+        <!-- Giriş yapmamış kullanıcılar için -->
+        <div class="guest-menu">
+            <button id="loginBtn" class="btn-auth">Giriş Yap</button>
+            <button id="registerBtn" class="btn-auth">Kayıt Ol</button>
+        </div>
+        <!-- Giriş yapmış kullanıcılar için -->
+        <div class="logged-in-menu">
             <div class="profile-dropdown">
                 <button class="profile-button">
                     <div class="avatar-mini">
-                        <span class="avatar-text">JS</span>
+                        <span class="avatar-text"></span>
                     </div>
-                    <span class="user-name">John Smith</span>
+                    <span class="user-name"></span>
                     <i class="fas fa-chevron-down"></i>
                 </button>
                 <div class="dropdown-menu">
-                    <a href="profile.html?tab=profile">
+                    <a href="profile.html">
                         <i class="fas fa-user"></i> Profilim
                     </a>
                     <a href="profile.html?tab=favorites">
@@ -35,13 +35,13 @@
                         <i class="fas fa-comments"></i> Yorumlarım
                     </a>
                     <div class="dropdown-divider"></div>
-                    <a href="#" id="logoutBtn">
+                    <button id="logoutBtn">
                         <i class="fas fa-sign-out-alt"></i> Çıkış Yap
-                    </a>
+                    </button>
                 </div>
             </div>
-        </li>
-    </ul>
+        </div>
+    </div>
 </nav>
 
 <!-- Search Results Section -->

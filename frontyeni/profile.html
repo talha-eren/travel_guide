@@ -3,10 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' http://localhost:5000 http://127.0.0.1:5000 https://cdnjs.cloudflare.com data: blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; font-src 'self' https://cdnjs.cloudflare.com; img-src 'self' data: https: blob:; connect-src 'self' http://localhost:5000 http://127.0.0.1:5000">
     <title>Profil - Gezi Rehberi</title>
     <link rel="stylesheet" href="assets/css/main.css">
     <link rel="stylesheet" href="assets/css/responsive.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="assets/js/config.js"></script>
 </head>
 <body>
     <!-- Başlık -->
@@ -56,17 +58,6 @@
                             <div class="form-group">
                                 <label>E-posta</label>
                                 <input type="email" id="email" name="email" required>
-                                <div class="email-status unverified">
-                                    <i class="fas fa-exclamation-circle"></i>
-                                    E-posta adresiniz doğrulanmamış
-                                    <button type="button" class="btn-link" onclick="resendVerification()">
-                                        Doğrulama mailini tekrar gönder
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label>Telefon</label>
-                                <input type="tel" id="phone" name="phone">
                             </div>
                             <button type="submit" class="btn btn-primary">Değişiklikleri Kaydet</button>
                         </form>
@@ -83,10 +74,6 @@
                             <div class="form-group">
                                 <label>Yeni Şifre</label>
                                 <input type="password" id="newPassword" name="newPassword" required>
-                                <div class="password-strength">
-                                    <div class="strength-bar"></div>
-                                    <span class="strength-text">Zayıf</span>
-                                </div>
                             </div>
                             <div class="form-group">
                                 <label>Yeni Şifre Tekrar</label>
@@ -119,21 +106,11 @@
     <!-- Altbilgi -->
     <div id="footer"></div>
 
-    <!-- Mekan Detayları Modalı -->
-    <div id="placeDetailsModal" class="modal">
-        <div class="modal-content">
-            <!-- Modal içeriği dinamik olarak yüklenecek -->
-        </div>
-    </div>
-
-    <!-- JavaScript -->
-    <script src="assets/js/data/places.js"></script>
-    <script src="assets/js/data/favorites.js"></script>
-    <script src="assets/js/data/comments.js"></script>
-    <script src="assets/js/comments.js"></script>
-    <script src="assets/js/placeDetails.js"></script>
+    <!-- JavaScript Files -->
     <script src="assets/js/main.js"></script>
+    <script src="assets/js/components.js"></script>
     <script src="assets/js/auth.js"></script>
+    <script src="assets/js/places.js"></script>
     <script src="assets/js/profile.js"></script>
 </body>
 </html> 
