@@ -7,6 +7,9 @@ async function loadComponents() {
             const headerHtml = await headerResponse.text();
             document.getElementById('header').innerHTML = headerHtml;
             
+            // Header yüklendikten sonra event tetikle
+            document.dispatchEvent(new Event('headerLoaded'));
+            
             // Header yüklendikten sonra auth durumunu kontrol et
             updateAuthUI();
             
@@ -60,11 +63,11 @@ function setupProfileDropdown() {
 
 // Auth durumuna göre UI'ı güncelle
 function updateAuthUI() {
-    const isLoggedIn = checkAuth();
+    const token = localStorage.getItem('token');
     const guestMenu = document.querySelector('.guest-menu');
     const userMenu = document.querySelector('.logged-in-menu');
     
-    if (isLoggedIn) {
+    if (token) {
         // Kullanıcı giriş yapmışsa
         if (guestMenu) guestMenu.style.display = 'none';
         if (userMenu) {
@@ -75,9 +78,17 @@ function updateAuthUI() {
             const userNameElement = userMenu.querySelector('.user-name');
             const avatarText = userMenu.querySelector('.avatar-text');
             
-            if (user) {
-                if (userNameElement) userNameElement.textContent = user.fullName || 'İsimsiz Kullanıcı';
-                if (avatarText) avatarText.textContent = getInitials(user.fullName || '');
+            if (user && user.fullName) {
+                if (userNameElement) userNameElement.textContent = user.fullName;
+                if (avatarText) {
+                    // İsmin baş harflerini al
+                    const initials = user.fullName
+                        .split(' ')
+                        .map(name => name.charAt(0))
+                        .join('')
+                        .toUpperCase();
+                    avatarText.textContent = initials;
+                }
             }
         }
     } else {

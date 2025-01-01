@@ -18,9 +18,16 @@ async function getProfile() {
         const profileName = document.querySelector('.profile-name');
         const profileEmail = document.querySelector('.profile-email');
 
-        if (avatarText) {
-            avatarText.textContent = getInitials(user.fullName || '');
+        if (avatarText && user.fullName) {
+            // İsmin baş harflerini al
+            const initials = user.fullName
+                .split(' ')
+                .map(name => name.charAt(0))
+                .join('')
+                .toUpperCase();
+            avatarText.textContent = initials;
         }
+
         if (profileName) {
             profileName.textContent = user.fullName || 'İsimsiz Kullanıcı';
         }
@@ -131,9 +138,11 @@ async function changePassword(event) {
 
 // İsmin baş harflerini al
 function getInitials(name) {
+    if (!name) return '';
     return name
         .split(' ')
-        .map(word => word[0])
+        .filter(word => word.length > 0) // Boş kelimeleri filtrele
+        .map(word => word.charAt(0))
         .join('')
         .toUpperCase();
 }
@@ -143,6 +152,7 @@ function switchTab(tabId) {
     // Tüm sekmeleri gizle
     document.querySelectorAll('.profile-section').forEach(section => {
         section.style.display = 'none';
+        section.classList.remove('active');
     });
 
     // Tüm tab butonlarını pasif yap
@@ -154,6 +164,7 @@ function switchTab(tabId) {
     const selectedSection = document.getElementById(tabId);
     if (selectedSection) {
         selectedSection.style.display = 'block';
+        selectedSection.classList.add('active');
     }
 
     // Seçilen tab butonunu aktif yap
@@ -337,61 +348,38 @@ async function loadTabContent(tabId) {
 }
 
 // Sayfa yüklendiğinde
-document.addEventListener('DOMContentLoaded', async function() {
-    try {
-        // Auth kontrolü
-        if (!checkAuth()) {
-            window.location.href = 'index.html';
-            return;
-        }
-
-        // Bileşenleri yükle
-        await loadComponents();
-
-        // Form event listener'larını ekle
-        const profileForm = document.getElementById('profileForm');
-        const passwordForm = document.getElementById('passwordForm');
-
-        if (profileForm) {
-            profileForm.addEventListener('submit', updateProfile);
-        }
-
-        if (passwordForm) {
-            passwordForm.addEventListener('submit', changePassword);
-        }
-
-        // Tab değiştirme işlemleri için event listener
-        const profileNav = document.querySelector('.profile-nav');
-        if (profileNav) {
-            profileNav.addEventListener('click', async (e) => {
-                const tabButton = e.target.closest('li');
-                if (!tabButton) return;
-
-                const newTabId = tabButton.dataset.tab;
-                if (newTabId) {
-                    // URL'i güncelle
-                    const url = new URL(window.location);
-                    url.searchParams.set('tab', newTabId);
-                    window.history.pushState({}, '', url);
-                    
-                    // Tab içeriğini yükle
-                    await loadTabContent(newTabId);
-                }
-            });
-        }
-
-        // İlk yüklemede aktif tab'ı belirle
-        const urlParams = new URLSearchParams(window.location.search);
-        const activeTab = urlParams.get('tab') || 'profile';
-        
-        // Profil bilgilerini yükle
-        await getProfile();
-        
-        // Aktif tab'ı yükle
-        await loadTabContent(activeTab);
-
-    } catch (error) {
-        console.error('Sayfa yüklenirken hata:', error);
-        showNotification('Sayfa yüklenirken bir hata oluştu', 'error');
+document.addEventListener('DOMContentLoaded', async () => {
+    // Auth kontrolü
+    if (!checkAuth()) {
+        window.location.href = 'index.html';
+        return;
     }
+
+    // Profil bilgilerini yükle
+    await getProfile();
+
+    // Form submit event listener'ları
+    const profileForm = document.getElementById('profileForm');
+    const passwordForm = document.getElementById('passwordForm');
+
+    profileForm?.addEventListener('submit', updateProfile);
+    passwordForm?.addEventListener('submit', changePassword);
+
+    // Tab değiştirme event listener'ı
+    const tabButtons = document.querySelectorAll('.profile-nav li');
+    tabButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const tabId = button.getAttribute('data-tab');
+            if (tabId) {
+                switchTab(tabId);
+                loadTabContent(tabId);
+            }
+        });
+    });
+
+    // URL'den tab kontrolü
+    const urlParams = new URLSearchParams(window.location.search);
+    const activeTab = urlParams.get('tab') || 'profile';
+    switchTab(activeTab);
+    loadTabContent(activeTab);
 }); 
