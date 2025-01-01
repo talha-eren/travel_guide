@@ -24,7 +24,7 @@ if __name__ == "__main__":
     file_name="location.txt"
     line_number=int(input("Şehirin plakasını giriniz:"))
     location=get_location(line_number,file_name)
-    database=Database(DATABASE_URL,"gezi_rehberi")
+    database=Database(DATABASE_URL,"deneme")
     print(location)
     place_info=placeinfo(location)
     places_data=place_info.get_data()

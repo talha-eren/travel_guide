@@ -77,7 +77,7 @@ class placeinfo:
 
             for photo in place_photos:
                 photo_reference = photo["photo_reference"]
-                photo_url = f"https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference={photo_reference}&key={GOOGLE_API_KEY}"
+                photo_url = f"https://maps.googleapis.com/maps/api/place/photo?maxwidth=1200&photoreference={photo_reference}&key={GOOGLE_API_KEY}"
                 photo_urls.append(photo_url)
 
             map_url = f"https://www.google.com/maps/place/?q=place_id:{place_id}"
