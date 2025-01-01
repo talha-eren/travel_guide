@@ -419,17 +419,24 @@ footer {
     border-radius: 8px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     min-width: 200px;
-    opacity: 0;
-    visibility: hidden;
-    transform: translateY(10px);
-    transition: all 0.3s ease;
+    display: none;
     z-index: 1000;
 }
 
-.profile-dropdown:hover .dropdown-menu {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0);
+.dropdown-menu.show {
+    display: block;
+    animation: fadeIn 0.2s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .dropdown-menu a {
@@ -1535,17 +1542,24 @@ footer {
     border-radius: 8px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     min-width: 200px;
-    opacity: 0;
-    visibility: hidden;
-    transform: translateY(10px);
-    transition: all 0.3s ease;
+    display: none;
     z-index: 1000;
 }
 
-.profile-dropdown:hover .dropdown-menu {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0);
+.dropdown-menu.show {
+    display: block;
+    animation: fadeIn 0.2s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .dropdown-menu a {
@@ -2296,22 +2310,46 @@ footer {
 /* Filters */
 .filters {
     display: flex;
+    flex-wrap: wrap;
     gap: 1rem;
     margin-bottom: 2rem;
-    flex-wrap: wrap;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.filter-group {
+    display: flex;
+    gap: 1rem;
+    flex: 1;
 }
 
 .filter-select {
     padding: 0.8rem;
     border: 1px solid #ddd;
     border-radius: 5px;
+    background: white;
     min-width: 200px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    flex: 1;
+}
+
+.filter-select:hover {
+    border-color: #007bff;
+}
+
+.filter-select:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
 }
 
 .search-box {
     display: flex;
     gap: 0.5rem;
-    flex: 1;
+    flex: 2;
 }
 
 .search-box input {
@@ -2319,12 +2357,19 @@ footer {
     padding: 0.8rem;
     border: 1px solid #ddd;
     border-radius: 5px;
+    transition: all 0.3s ease;
+}
+
+.search-box input:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
 }
 
 .search-box button {
     padding: 0.8rem 1.5rem;
     background: #007bff;
-    color: #fff;
+    color: white;
     border: none;
     border-radius: 5px;
     cursor: pointer;
@@ -2333,6 +2378,62 @@ footer {
 
 .search-box button:hover {
     background: #0056b3;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .filters {
+        flex-direction: column;
+    }
+
+    .filter-group {
+        flex-direction: column;
+    }
+
+    .filter-select {
+        width: 100%;
+    }
+
+    .search-box {
+        width: 100%;
+    }
+}
+
+/* Places Grid */
+.places-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+/* No Results & Error Messages */
+.no-results,
+.error-message {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 3rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.no-results i,
+.error-message i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    color: #6c757d;
+}
+
+.error-message i {
+    color: #dc3545;
+}
+
+.no-results p,
+.error-message p {
+    color: #6c757d;
+    font-size: 1.1rem;
+    margin: 0;
 }
 
 /* Pagination */
@@ -2347,13 +2448,13 @@ footer {
 .page-btn {
     padding: 0.5rem 1rem;
     border: 1px solid #ddd;
-    background: #fff;
+    background: white;
     border-radius: 5px;
     cursor: pointer;
     transition: all 0.3s ease;
 }
 
-.page-btn:hover:not(:disabled) {
+.page-btn:not(:disabled):hover {
     background: #f8f9fa;
     border-color: #007bff;
 }
@@ -2364,7 +2465,7 @@ footer {
 }
 
 #currentPage {
-    color: #666;
+    color: #6c757d;
     font-weight: 500;
 }
 
@@ -3117,3 +3218,23 @@ main {
 .map-button i {
     font-size: 1.2rem;
 } 
+
+/* Loading Animation */
+.loading {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 3rem;
+    color: #6c757d;
+    font-size: 1.2rem;
+}
+
+.loading i {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}

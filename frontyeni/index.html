@@ -64,31 +64,31 @@
 
     <section id="destinations" class="destinations-section">
         <div class="container">
-            <h2>Popüler Mekanlar</h2>
+            <h2>Mekanlar</h2>
             <form id="filterForm" class="filters">
-                <select id="categoryFilter" name="category" class="filter-select">
-                    <option value="">Tüm Kategoriler</option>
-                    <option value="Tarihi">Tarihi</option>
-                    <option value="Doğal">Doğal</option>
-                    <option value="Kültürel">Kültürel</option>
-                    <option value="Eğlence">Eğlence</option>
-                    <option value="Yeme-İçme">Yeme-İçme</option>
-                </select>
-                <select id="cityFilter" name="city" class="filter-select">
-                    <option value="">Tüm Şehirler</option>
-                </select>
+                <div class="filter-group">
+                    <select id="cityFilter" name="city" class="filter-select">
+                        <!-- Şehirler JavaScript ile doldurulacak -->
+                    </select>
+                </div>
                 <div class="search-box">
                     <input type="text" id="searchInput" name="search" placeholder="Mekan ara...">
-                    <button type="submit" id="searchButton"><i class="fas fa-search"></i></button>
+                    <button type="submit" id="searchButton">
+                        <i class="fas fa-search"></i>
+                    </button>
                 </div>
             </form>
             <div id="placesList" class="places-grid">
-                <!-- Mekanlar buraya dinamik olarak eklenecek -->
+                <!-- Mekanlar dinamik olarak eklenecek -->
             </div>
             <div class="pagination">
-                <button id="prevPage" class="page-btn" type="button"><i class="fas fa-chevron-left"></i></button>
+                <button id="prevPage" class="page-btn" disabled>
+                    <i class="fas fa-chevron-left"></i>
+                </button>
                 <span id="currentPage">Sayfa 1</span>
-                <button id="nextPage" class="page-btn" type="button"><i class="fas fa-chevron-right"></i></button>
+                <button id="nextPage" class="page-btn" disabled>
+                    <i class="fas fa-chevron-right"></i>
+                </button>
             </div>
         </div>
     </section>

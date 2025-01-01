@@ -2,7 +2,6 @@
 let currentPage = 1;
 let totalPages = 1;
 let currentFilters = {
-    category: '',
     city: '',
     search: ''
 };
@@ -16,26 +15,24 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Mekanları yükle
         await fetchPlaces();
 
-        // Filter form submit
-        const filterForm = document.getElementById('filterForm');
-        filterForm?.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            currentPage = 1;
-            await fetchPlaces();
-        });
-
-        // Kategori değişikliği
-        const categoryFilter = document.getElementById('categoryFilter');
-        categoryFilter?.addEventListener('change', async () => {
-            currentPage = 1;
-            await fetchPlaces();
-        });
-
         // Şehir değişikliği
         const cityFilter = document.getElementById('cityFilter');
         cityFilter?.addEventListener('change', async () => {
+            currentFilters.city = cityFilter.value;
             currentPage = 1;
             await fetchPlaces();
+        });
+
+        // Arama input değişikliği
+        const searchInput = document.getElementById('searchInput');
+        let searchTimeout;
+        searchInput?.addEventListener('input', async (e) => {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(async () => {
+                currentFilters.search = e.target.value;
+                currentPage = 1;
+                await fetchPlaces();
+            }, 300);
         });
 
         // Sayfalama butonları
@@ -57,61 +54,42 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     } catch (error) {
         console.error('Error loading places:', error);
-        const placesList = document.getElementById('placesList');
-        if (placesList) {
-            placesList.innerHTML = `<div class="error-message">
-                <i class="fas fa-exclamation-circle"></i>
-                <p>Mekanlar yüklenirken bir hata oluştu.</p>
-            </div>`;
-        }
+        showError('Mekanlar yüklenirken bir hata oluştu');
     }
 });
 
 // Şehirleri yükle
 async function loadCities() {
     try {
-        if (typeof API_URL === 'undefined') {
-            console.error('API_URL is not defined');
-            throw new Error('API bağlantısı kurulamadı');
-        }
-
         const response = await fetch(`${API_URL}/places/cities`);
-        console.log('Cities response:', response);
-        
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            throw new Error('Şehirler yüklenemedi');
         }
 
         const data = await response.json();
-        console.log('Cities data:', data);
-        
         const cityFilter = document.getElementById('cityFilter');
+        
         if (cityFilter && data.cities) {
-            data.cities.forEach(city => {
-                const option = document.createElement('option');
-                option.value = city;
-                option.textContent = city;
-                cityFilter.appendChild(option);
-            });
+            cityFilter.innerHTML = `
+                <option value="">Tüm Şehirler</option>
+                ${data.cities.map(city => `
+                    <option value="${city}">${city}</option>
+                `).join('')}
+            `;
         }
     } catch (error) {
         console.error('Error loading cities:', error);
-        showNotification('Şehirler yüklenirken bir hata oluştu', 'error');
+        showError('Şehirler yüklenirken bir hata oluştu');
     }
 }
 
 // Mekanları getir
 async function fetchPlaces() {
     try {
-        if (typeof API_URL === 'undefined') {
-            console.error('API_URL is not defined');
-            throw new Error('API bağlantısı kurulamadı');
+        const placesList = document.getElementById('placesList');
+        if (placesList) {
+            placesList.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Yükleniyor...</div>';
         }
-
-        // Filtreleri al
-        const category = document.getElementById('categoryFilter')?.value || '';
-        const city = document.getElementById('cityFilter')?.value || '';
-        const search = document.getElementById('searchInput')?.value || '';
 
         // URL parametrelerini oluştur
         const params = new URLSearchParams({
@@ -119,52 +97,59 @@ async function fetchPlaces() {
             limit: 12
         });
 
-        if (category) params.append('category', category);
-        if (city) params.append('city', city);
-        if (search) params.append('search', search);
+        // Filtreleri ekle
+        if (currentFilters.city) {
+            params.append('city', currentFilters.city);
+        }
+        if (currentFilters.search) {
+            params.append('search', currentFilters.search);
+        }
 
-        const url = `${API_URL}/places?${params.toString()}`;
-        console.log('Fetching places from URL:', url);
-
-        // API'den mekanları getir
-        const response = await fetch(url);
-        console.log('Response status:', response.status);
-        
+        const response = await fetch(`${API_URL}/places?${params.toString()}`);
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            throw new Error('Mekanlar yüklenemedi');
         }
 
         const data = await response.json();
-        console.log('Places data:', data);
 
-        // Toplam sayfa sayısını güncelle
-        totalPages = Math.ceil(data.total / 12);
-
-        // Mekanları görüntüle
         if (!data.places || data.places.length === 0) {
-            const placesList = document.getElementById('placesList');
-            if (placesList) {
-                placesList.innerHTML = `<div class="no-results">
-                    <i class="fas fa-search"></i>
-                    <p>Hiç mekan bulunamadı.</p>
-                </div>`;
-            }
+            showNoResults();
             return;
         }
 
+        totalPages = Math.ceil(data.total / 12);
         renderPlaces(data.places);
-        // Sayfalama bilgisini güncelle
         updatePagination();
 
     } catch (error) {
         console.error('Error fetching places:', error);
+        showError('Mekanlar yüklenirken bir hata oluştu');
+    }
+}
+
+// Hata mesajı göster
+function showError(message) {
         const placesList = document.getElementById('placesList');
         if (placesList) {
-            placesList.innerHTML = `<div class="error-message">
+        placesList.innerHTML = `
+            <div class="error-message">
                 <i class="fas fa-exclamation-circle"></i>
-                <p>Mekanlar yüklenirken bir hata oluştu: ${error.message}</p>
-            </div>`;
-        }
+                <p>${message}</p>
+            </div>
+        `;
+    }
+}
+
+// Sonuç bulunamadı mesajı göster
+function showNoResults() {
+    const placesList = document.getElementById('placesList');
+    if (placesList) {
+        placesList.innerHTML = `
+            <div class="no-results">
+                <i class="fas fa-search"></i>
+                <p>Arama kriterlerinize uygun mekan bulunamadı.</p>
+            </div>
+        `;
     }
 }
 
@@ -173,15 +158,26 @@ function renderPlaces(places) {
     const placesList = document.getElementById('placesList');
     if (!placesList) return;
 
-    if (!places || places.length === 0) {
-        placesList.innerHTML = `<div class="no-results">
-            <i class="fas fa-search"></i>
-            <p>Sonuç bulunamadı.</p>
-        </div>`;
-        return;
+    placesList.innerHTML = places.map(place => createPlaceCard(place)).join('');
+}
+
+// Sayfalama bilgisini güncelle
+function updatePagination() {
+    const currentPageSpan = document.getElementById('currentPage');
+    const prevButton = document.getElementById('prevPage');
+    const nextButton = document.getElementById('nextPage');
+
+    if (currentPageSpan) {
+        currentPageSpan.textContent = `Sayfa ${currentPage} / ${totalPages}`;
     }
 
-    placesList.innerHTML = places.map(place => createPlaceCard(place)).join('');
+    if (prevButton) {
+        prevButton.disabled = currentPage <= 1;
+    }
+
+    if (nextButton) {
+        nextButton.disabled = currentPage >= totalPages;
+    }
 }
 
 // Mekan kartı oluştur
@@ -241,25 +237,6 @@ function getStarRating(rating) {
         ${Array(emptyStars).fill('<i class="far fa-star"></i>').join('')}
         <span class="rating-number">${rating.toFixed(1)}</span>
     `;
-}
-
-// Sayfalama bilgisini güncelle
-function updatePagination() {
-    const currentPageSpan = document.getElementById('currentPage');
-    const prevButton = document.getElementById('prevPage');
-    const nextButton = document.getElementById('nextPage');
-
-    if (currentPageSpan) {
-        currentPageSpan.textContent = `Sayfa ${currentPage}`;
-    }
-
-    if (prevButton) {
-        prevButton.disabled = currentPage <= 1;
-    }
-
-    if (nextButton) {
-        nextButton.disabled = currentPage >= totalPages;
-    }
 }
 
 // Mekanın ana resmini belirle

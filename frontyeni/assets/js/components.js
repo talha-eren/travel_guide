@@ -9,6 +9,9 @@ async function loadComponents() {
             
             // Header yüklendikten sonra auth durumunu kontrol et
             updateAuthUI();
+            
+            // Profil dropdown menüsünü ayarla
+            setupProfileDropdown();
         }
         
         // Footer'ı yükle
@@ -22,56 +25,65 @@ async function loadComponents() {
     }
 }
 
-// Auth durumuna göre UI'ı güncelle
-function updateAuthUI() {
-    const isLoggedIn = checkAuth();
-    const guestMenu = document.querySelector('.guest-menu');
-    const userMenu = document.querySelector('.user-menu');
-    const loginBtn = document.getElementById('loginBtn');
-    const registerBtn = document.getElementById('registerBtn');
+// Profil dropdown menüsünü ayarla
+function setupProfileDropdown() {
+    const profileButton = document.querySelector('.profile-button');
+    const dropdownMenu = document.querySelector('.dropdown-menu');
     
-    if (isLoggedIn) {
-        // Kullanıcı giriş yapmışsa
-        if (guestMenu) guestMenu.style.display = 'none';
-        if (userMenu) userMenu.style.display = 'flex';
-        if (loginBtn) loginBtn.style.display = 'none';
-        if (registerBtn) registerBtn.style.display = 'none';
-        
-        // Kullanıcı bilgilerini göster
-        const user = JSON.parse(localStorage.getItem('user'));
-        const userNameElement = document.querySelector('.user-name');
-        const avatarText = document.querySelector('.avatar-text');
-        
-        if (user) {
-            if (userNameElement) userNameElement.textContent = user.fullName || 'İsimsiz Kullanıcı';
-            if (avatarText) avatarText.textContent = getInitials(user.fullName || '');
-        }
+    if (profileButton && dropdownMenu) {
+        // Tıklama olayını dinle
+        profileButton.addEventListener('click', (e) => {
+            e.stopPropagation(); // Event'in yayılmasını engelle
+            dropdownMenu.classList.toggle('show');
+        });
 
-        // Profil dropdown menüsünü ayarla
-        const profileButton = document.querySelector('.profile-button');
-        if (profileButton) {
-            profileButton.addEventListener('click', () => {
-                window.location.href = 'profile.html';
-            });
-        }
+        // Sayfa herhangi bir yerine tıklandığında menüyü kapat
+        document.addEventListener('click', (e) => {
+            if (!profileButton.contains(e.target) && !dropdownMenu.contains(e.target)) {
+                dropdownMenu.classList.remove('show');
+            }
+        });
 
-        // Profil menü linklerini ayarla
-        const profileLinks = document.querySelectorAll('.dropdown-menu a');
-        profileLinks.forEach(link => {
-            link.addEventListener('click', (e) => {
+        // Menü öğelerine tıklama olaylarını ekle
+        const menuItems = dropdownMenu.querySelectorAll('a');
+        menuItems.forEach(item => {
+            item.addEventListener('click', (e) => {
                 e.preventDefault();
-                const href = link.getAttribute('href');
+                const href = item.getAttribute('href');
                 if (href) {
                     window.location.href = href;
                 }
             });
         });
+    }
+}
+
+// Auth durumuna göre UI'ı güncelle
+function updateAuthUI() {
+    const isLoggedIn = checkAuth();
+    const guestMenu = document.querySelector('.guest-menu');
+    const userMenu = document.querySelector('.logged-in-menu');
+    
+    if (isLoggedIn) {
+        // Kullanıcı giriş yapmışsa
+        if (guestMenu) guestMenu.style.display = 'none';
+        if (userMenu) {
+            userMenu.style.display = 'flex';
+            
+            // Kullanıcı bilgilerini göster
+            const user = JSON.parse(localStorage.getItem('user'));
+            const userNameElement = userMenu.querySelector('.user-name');
+            const avatarText = userMenu.querySelector('.avatar-text');
+            
+            if (user) {
+                if (userNameElement) userNameElement.textContent = user.fullName || 'İsimsiz Kullanıcı';
+                if (avatarText) avatarText.textContent = getInitials(user.fullName || '');
+            }
+        }
     } else {
         // Kullanıcı giriş yapmamışsa
         if (guestMenu) guestMenu.style.display = 'flex';
         if (userMenu) userMenu.style.display = 'none';
-        if (loginBtn) loginBtn.style.display = 'block';
-        if (registerBtn) registerBtn.style.display = 'block';
     }
 }
 
