@@ -65,6 +65,7 @@ function fillPlaceDetails(place) {
         document.getElementById('placeDescription').textContent = place.description || 'Açıklama bulunmuyor';
         document.getElementById('placeAddress').textContent = place.address || 'Adres belirtilmemiş';
         document.getElementById('placeTotalRatings').textContent = place.totalRatings || 0;
+        document.getElementById('placePhone').textContent = place.phone_number || 'Telefon numarası belirtilmemiş';
         
         // Yıldızları güncelle
         const ratingDiv = document.getElementById('placeRating');

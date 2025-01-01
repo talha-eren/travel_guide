@@ -23,7 +23,7 @@ async function updateFromDeneme() {
                 .findOne({ name: denemePlace.name });
 
             if (existingPlace) {
-                // Sadece wiki_summary ve opening_hours alanlarını güncelle
+                // Sadece wiki_summary, opening_hours ve phone_number alanlarını güncelle
                 const updateData = {};
                 
                 if (denemePlace.wiki_summary) {
@@ -32,6 +32,10 @@ async function updateFromDeneme() {
                 
                 if (denemePlace.opening_hours) {
                     updateData.opening_hours = denemePlace.opening_hours;
+                }
+
+                if (denemePlace.phone_number) {
+                    updateData.phone_number = denemePlace.phone_number;
                 }
 
                 if (Object.keys(updateData).length > 0) {

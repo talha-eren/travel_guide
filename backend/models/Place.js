@@ -37,7 +37,10 @@ const placeSchema = new mongoose.Schema({
     },
     opening_hours: [{
         type: String
-    }]
+    }],
+    phone_number: {
+        type: String
+    }
 }, {
     timestamps: true,
     toJSON: { 
@@ -98,6 +101,11 @@ const placeSchema = new mongoose.Schema({
                 });
 
                 ret.openingHours = openingHours;
+            }
+
+            // phone_number'ı ekle
+            if (doc.phone_number) {
+                ret.phone_number = doc.phone_number;
             }
 
             return ret;
