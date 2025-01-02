@@ -1,362 +1,530 @@
-# Gezi Rehberi Projesinde Kullanılan Tasarım Desenleri
+# Gezi Rehberi Projesi Mimari Yapısı ve Tasarım Desenleri
 
-## 1. MVC (Model-View-Controller) Pattern
-**Kullanım Amacı**: Veri, görünüm ve iş mantığını ayırmak.
+## Mimari Yapı
 
-**Projemizdeki Kullanım**:
+### 1. Client-Server Mimarisi
+**Açıklama**: Uygulama, istemci (client) ve sunucu (server) olmak üzere iki ana bileşene ayrılmıştır.
+
+**Bileşenler**:
+- **Client (Frontend - `frontyeni/`):**
+  - HTML, CSS ve JavaScript ile geliştirilmiş web arayüzü
+  - REST API ile backend'e bağlantı
+  - Responsive tasarım
+  - Tarayıcı tabanlı kullanıcı deneyimi
+
+- **Server (Backend - `backend/`):**
+  - Node.js ve Express.js framework'ü
+  - MongoDB veritabanı entegrasyonu
+  - RESTful API endpoints
+  - JWT tabanlı kimlik doğrulama sistemi
+
+### 2. MVC (Model-View-Controller) Mimarisi
+**Açıklama**: Uygulama mantığı üç temel bileşene ayrılmıştır.
+
+**Bileşenler**:
 ```javascript
-// Model (backend/models/User.js)
-const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
-
-const userSchema = new mongoose.Schema({
-    fullName: {
-        type: String,
-        required: true
-    },
-    email: {
-        type: String,
-        required: true,
-        unique: true
-    },
-    password: {
-        type: String,
-        required: true
-    },
-    isVerified: {
-        type: Boolean,
-        default: false
-    },
-    createdAt: {
-        type: Date,
-        default: Date.now
-    }
+// Model (backend/models/Place.js)
+const placeSchema = new mongoose.Schema({
+    name: { type: String, required: true },
+    category: { type: String, required: true },
+    city: { type: String, required: true }
 });
 
-// View (frontyeni/profile.html)
-<div class="profile-section active" id="profile">
-    <h2>Profil Bilgileri</h2>
-    <form id="profileForm" class="profile-form">
-        <div class="form-group">
-            <label>Ad Soyad</label>
-            <input type="text" id="fullName" name="fullName" required>
-        </div>
-        <div class="form-group">
-            <label>E-posta</label>
-            <input type="email" id="email" name="email" required>
-        </div>
-        <button type="submit" class="btn btn-primary">Değişiklikleri Kaydet</button>
-    </form>
-</div>
+// View (frontyeni/index.html ve JS render fonksiyonları)
+function renderPlaces(places) {
+    const placesList = document.getElementById('placesList');
+    placesList.innerHTML = places.map(place => createPlaceCard(place)).join('');
+}
 
-// Controller (backend/routes/profile.js)
-router.put('/update', authMiddleware, async (req, res) => {
+// Controller (backend/routes/places.js)
+router.get('/cities', async (req, res) => {
     try {
-        const { fullName, email } = req.body;
-        const user = req.user;
-
-        if (email !== user.email) {
-            const existingUser = await User.findOne({ email });
-            if (existingUser) {
-                return res.status(400).json({ message: 'Bu email adresi zaten kullanılıyor.' });
-            }
-            user.email = email;
-        }
-
-        user.fullName = fullName;
-        await user.save();
-
-        const updatedUser = user.toObject();
-        delete updatedUser.password;
-
-        res.json({
-            message: 'Profil bilgileri başarıyla güncellendi',
-            user: updatedUser
-        });
+        const cities = await Place.distinct('city_name');
+        res.json({ cities });
     } catch (error) {
-        res.status(500).json({ message: 'Sunucu hatası', error: error.message });
+        res.status(500).json({ message: 'Hata oluştu' });
     }
 });
 ```
 
-## 2. Middleware Pattern
-**Kullanım Amacı**: İstek-yanıt döngüsünü kontrol etmek ve kimlik doğrulama.
+### 3. Katmanlı Mimari (Layered Architecture)
+**Açıklama**: Uygulama mantıksal katmanlara ayrılmıştır.
 
-**Projemizdeki Kullanım**:
+**Katmanlar**:
+1. **Sunum Katmanı (Presentation Layer)**
+   - Frontend uygulaması
+   - Kullanıcı arayüzü bileşenleri
+   - Form validasyonları
+   - Client-side routing
+
+2. **İş Mantığı Katmanı (Business Layer)**
+   - Route handler'lar
+   - Middleware'ler
+   - Veri doğrulama
+   - İş kuralları
+
+3. **Veri Erişim Katmanı (Data Access Layer)**
+   - Mongoose modelleri
+   - Veritabanı işlemleri
+   - Veri dönüşümleri
+
+### 4. RESTful API Mimarisi
+**Açıklama**: HTTP metodları üzerinden CRUD işlemleri için standart bir arayüz.
+
+**Endpoint Örnekleri**:
 ```javascript
-// backend/routes/profile.js
-const authMiddleware = async (req, res, next) => {
+// Mekan İşlemleri
+GET    /api/places          // Mekanları listele
+POST   /api/places          // Yeni mekan ekle
+GET    /api/places/:id      // Mekan detayı
+PUT    /api/places/:id      // Mekan güncelle
+DELETE /api/places/:id      // Mekan sil
+
+// Kullanıcı İşlemleri
+POST   /api/auth/login      // Giriş yap
+POST   /api/auth/register   // Kayıt ol
+GET    /api/profile        // Profil bilgileri
+```
+
+### 5. Modüler Yapı
+**Açıklama**: Kod tabanı mantıksal modüllere ayrılmıştır.
+
+**Dizin Yapısı**:
+```
+travel_guide/
+├── backend/
+│   ├── models/          # Veri modelleri
+│   ├── routes/          # API endpoint'leri
+│   ├── middleware/      # Ara yazılımlar
+│   └── scripts/         # Yardımcı scriptler
+│
+└── frontyeni/
+    ├── assets/
+    │   ├── css/         # Stil dosyaları
+    │   └── js/          # JavaScript modülleri
+    ├── components/      # Yeniden kullanılabilir bileşenler
+    └── *.html           # Sayfa şablonları
+```
+
+### Mimari Avantajları
+1. **Modülerlik**: Kod organizasyonu düzenli ve bakımı kolay
+2. **Ölçeklenebilirlik**: Yeni özellikler kolayca eklenebilir
+3. **Test Edilebilirlik**: Her katman bağımsız olarak test edilebilir
+4. **Güvenlik**: Merkezi kontrol noktaları
+5. **Performans**: Optimize edilmiş veri akışı
+6. **Bakım Kolaylığı**: Sorunlar izole edilebilir ve çözülebilir
+
+---
+
+# Tasarım Desenleri
+
+## 1. MVC (Model-View-Controller) Pattern
+**Kullanım Amacı**: Uygulamanın veri (Model), sunum (View) ve iş mantığı (Controller) katmanlarını birbirinden ayırmak.
+
+**Nerede Kullanıldı**:
+- **Model**: `backend/models/` altındaki Place.js, User.js, Comment.js modelleri
+- **View**: `frontyeni/` altındaki HTML dosyaları ve assets/js/places.js'deki render fonksiyonları
+- **Controller**: `backend/routes/` altındaki route handler'lar
+
+**Örnek**:
+```javascript
+// Model (backend/models/Place.js)
+const placeSchema = new mongoose.Schema({
+    name: {
+        type: String,
+        required: true,
+        trim: true
+    },
+    category: {
+        type: String,
+        required: true,
+        enum: ['tarihi', 'dogal', 'kulturel', 'eglence', 'yeme-icme']
+    },
+    city: {
+        type: String,
+        required: true
+    }
+});
+
+// View (frontyeni/assets/js/places.js)
+function renderPlaces(places) {
+    const placesList = document.getElementById('placesList');
+    if (!placesList) return;
+    placesList.innerHTML = places.map(place => createPlaceCard(place)).join('');
+}
+
+// Controller (backend/routes/places.js)
+router.get('/cities', async (req, res) => {
     try {
-        // Token'ı header'dan al
+        const cities = await Place.distinct('city_name');
+        res.json({ cities });
+    } catch (error) {
+        res.status(500).json({ message: 'Şehirler getirilirken bir hata oluştu' });
+    }
+});
+
+## 2. Repository Pattern
+**Kullanım Amacı**: Veri erişim mantığını soyutlamak ve merkezi bir noktadan yönetmek.
+
+**Nerede Kullanıldı**: Backend'de Place, User ve Comment modellerinin kullanıldığı yerler.
+
+**Örnek**:
+```javascript
+// backend/routes/places.js
+router.get('/', async (req, res) => {
+    try {
+        const { page = 1, limit = 12, category, city_name, search } = req.query;
+        const query = {};
+        if (category) query.category = category;
+        if (city_name) query.city_name = city_name;
+        
+        const total = await Place.countDocuments(query);
+        const places = await Place.find(query)
+            .sort({ rating: -1 })
+            .skip((page - 1) * limit)
+            .limit(parseInt(limit));
+
+        res.json({
+            places,
+            total,
+            currentPage: parseInt(page),
+            totalPages: Math.ceil(total / limit)
+        });
+    } catch (error) {
+        res.status(500).json({ message: 'Mekanlar getirilirken bir hata oluştu' });
+    }
+});
+
+## 3. Observer Pattern
+**Kullanım Amacı**: DOM olaylarını dinlemek ve bu olaylara tepki vermek.
+
+**Nerede Kullanıldı**: Frontend'deki tüm event listener'lar
+
+**Örnek**:
+```javascript
+// frontyeni/assets/js/places.js
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        await loadCities();
+        await fetchPlaces();
+
+        const cityFilter = document.getElementById('cityFilter');
+        cityFilter?.addEventListener('change', async () => {
+            currentFilters.city = cityFilter.value;
+            currentPage = 1;
+            await fetchPlaces();
+        });
+
+        const searchInput = document.getElementById('searchInput');
+        let searchTimeout;
+        searchInput?.addEventListener('input', async (e) => {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(async () => {
+                currentFilters.search = e.target.value;
+                currentPage = 1;
+                await fetchPlaces();
+            }, 300);
+        });
+    } catch (error) {
+        console.error('Error loading places:', error);
+        showError('Mekanlar yüklenirken bir hata oluştu');
+    }
+});
+
+## 4. Factory Pattern
+**Kullanım Amacı**: UI bileşenlerinin oluşturulmasını merkezi bir noktada toplamak.
+
+**Nerede Kullanıldı**: Frontend'deki createPlaceCard, createFavoriteCard ve createCommentCard fonksiyonları
+
+**Örnek**:
+```javascript
+// frontyeni/assets/js/places.js
+function createPlaceCard(place) {
+    const mainImage = getMainImage(place);
+    const apiKey = window.GOOGLE_MAPS_API_KEY || '';
+    
+    const allPhotos = [
+        ...processPhotos(Array.isArray(place.photo) ? place.photo : [place.photo], apiKey),
+        ...processPhotos(place.images, apiKey)
+    ].filter(Boolean);
+
+    return `
+        <div class="place-card">
+            <div class="place-image">
+                <img src="${mainImage}" alt="${place.name || 'Mekan Görseli'}" 
+                    onerror="this.onerror=null; this.src='data:image/svg+xml,...';"
+                    data-photos='${JSON.stringify(allPhotos)}'>
+                ${allPhotos.length > 1 ? `
+                    <div class="photo-count">
+                        <i class="fas fa-images"></i>
+                        ${allPhotos.length} fotoğraf
+                    </div>
+                ` : ''}
+            </div>
+            <div class="place-info">
+                <h3>${place.name || 'İsimsiz Mekan'}</h3>
+                <div class="place-rating">
+                    ${getStarRating(place.rating || 0)}
+                    <span>(${place.totalRatings || 0} değerlendirme)</span>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+## 5. Decorator Pattern
+**Kullanım Amacı**: Mongoose modellerine dinamik olarak yeni özellikler eklemek.
+
+**Nerede Kullanıldı**: Place modelinde virtuals ve transform fonksiyonları
+
+**Örnek**:
+```javascript
+// backend/models/Place.js
+placeSchema.set('toJSON', { 
+    virtuals: true,
+    transform: function(doc, ret) {
+        // description alanını wiki_summary'den al
+        ret.description = doc.wiki_summary;
+        
+        // openingHours'ı opening_hours'dan oluştur
+        if (doc.opening_hours && Array.isArray(doc.opening_hours)) {
+            const dayMap = {
+                'Pazartesi': 'monday',
+                'Salı': 'tuesday',
+                // ...diğer günler
+            };
+            // Çalışma saatlerini dönüştür
+            ret.openingHours = transformOpeningHours(doc.opening_hours, dayMap);
+        }
+        return ret;
+    }
+});
+
+## 6. Middleware Pattern
+**Kullanım Amacı**: İstek-yanıt döngüsünü işlemek, kimlik doğrulama yapmak.
+
+**Nerede Kullanıldı**: Backend'de auth middleware ve error handling
+
+**Örnek**:
+```javascript
+// backend/middleware/auth.js
+const auth = async (req, res, next) => {
+    try {
         const token = req.header('Authorization')?.replace('Bearer ', '');
         if (!token) {
             return res.status(401).json({ message: 'Yetkilendirme hatası' });
         }
-
-        // Token'ı doğrula
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        
-        // Kullanıcıyı bul
         const user = await User.findById(decoded.userId);
         if (!user) {
             return res.status(404).json({ message: 'Kullanıcı bulunamadı' });
         }
-
-        // Kullanıcıyı request'e ekle
         req.user = user;
         next();
     } catch (error) {
-        res.status(401).json({ message: 'Yetkilendirme hatası', error: error.message });
+        res.status(401).json({ message: 'Yetkilendirme hatası' });
     }
 };
-```
 
-## 3. Module Pattern
-**Kullanım Amacı**: Kodun modüler ve bakımı kolay olması.
+## 7. Module Pattern
+**Kullanım Amacı**: JavaScript kodunu modüler parçalara ayırmak.
 
-**Projemizdeki Kullanım**:
+**Nerede Kullanıldı**: Frontend'deki JS dosyaları organizasyonu
+
+**Örnek**:
 ```javascript
-// frontyeni/assets/js/auth.js
-const API_URL = 'http://localhost:5000/api';
+// frontyeni/assets/js/places.js
+// Global state
+let currentPage = 1;
+let totalPages = 1;
+let currentFilters = {
+    city: '',
+    search: ''
+};
 
-// Login işlemi
-async function login(email, password) {
+// Modül fonksiyonları
+async function loadCities() { /* ... */ }
+async function fetchPlaces() { /* ... */ }
+function renderPlaces(places) { /* ... */ }
+function createPlaceCard(place) { /* ... */ }
+function getStarRating(rating) { /* ... */ }
+
+## 8. Singleton Pattern
+**Kullanım Amacı**: Bir sınıfın tek bir örneğinin (instance) olmasını sağlamak ve bu örneğe global erişim noktası sunmak.
+
+**Nerede Kullanıldı**: 
+- MongoDB veritabanı bağlantısı
+- Frontend'de localStorage yönetimi
+
+**Örnek**:
+```javascript
+// backend/app.js veya server.js
+// MongoDB bağlantısı için Singleton Pattern
+let dbInstance = null;
+
+async function connectDB() {
+    if (dbInstance) return dbInstance;
+    
     try {
-        const response = await fetch(`${API_URL}/auth/login`, {
+        const connection = await mongoose.connect(process.env.MONGODB_URI, {
+            useNewUrlParser: true,
+            useUnifiedTopology: true
+        });
+        
+        dbInstance = connection;
+        console.log('MongoDB connected');
+        return dbInstance;
+    } catch (error) {
+        console.error('MongoDB connection error:', error);
+        process.exit(1);
+    }
+}
+
+// Kullanımı
+connectDB(); // İlk bağlantı
+// Daha sonraki kullanımlarda aynı bağlantı örneği döner
+
+// Frontend'de localStorage Singleton örneği
+const Storage = {
+    setItem(key, value) {
+        localStorage.setItem(key, JSON.stringify(value));
+    },
+    getItem(key) {
+        const item = localStorage.getItem(key);
+        return item ? JSON.parse(item) : null;
+    },
+    removeItem(key) {
+        localStorage.removeItem(key);
+    },
+    clear() {
+        localStorage.clear();
+    }
+};
+
+// Kullanımı
+Storage.setItem('user', userData);
+const user = Storage.getItem('user');
+
+## 9. Strategy Pattern
+**Kullanım Amacı**: Farklı algoritmaları değiştirilebilir şekilde kullanmak.
+
+**Nerede Kullanıldı**: 
+- Frontend'de arama ve filtreleme stratejileri
+- Backend'de kimlik doğrulama stratejileri
+
+**Örnek**:
+```javascript
+// frontyeni/assets/js/search.js
+const searchStrategies = {
+    byName: (places, query) => places.filter(p => 
+        p.name.toLowerCase().includes(query.toLowerCase())
+    ),
+    byCity: (places, city) => places.filter(p => 
+        p.city_name === city
+    ),
+    byCategory: (places, category) => places.filter(p => 
+        p.category === category
+    )
+};
+
+// Kullanımı
+const filteredPlaces = searchStrategies[strategy](places, query);
+
+## 10. Chain of Responsibility Pattern
+**Kullanım Amacı**: İstekleri bir dizi işleyici üzerinden geçirmek.
+
+**Nerede Kullanıldı**: 
+- Backend middleware zinciri
+- Frontend'de form doğrulama
+
+**Örnek**:
+```javascript
+// backend/app.js
+app.use(express.json());
+app.use(cors());
+app.use(authMiddleware);
+app.use('/api/places', placesRouter);
+app.use('/api/auth', authRouter);
+app.use('/api/profile', profileRouter);
+
+## 11. Adapter Pattern
+**Kullanım Amacı**: Farklı arayüzleri uyumlu hale getirmek.
+
+**Nerede Kullanıldı**: 
+- Place modelinde çalışma saatlerinin dönüştürülmesi
+- Frontend'de API yanıtlarının UI'a uyarlanması
+
+**Örnek**:
+```javascript
+// backend/models/Place.js
+function transformOpeningHours(rawHours, dayMap) {
+    const formattedHours = {
+        monday: { open: null, close: null },
+        tuesday: { open: null, close: null },
+        // ... diğer günler
+    };
+
+    rawHours.forEach(dayStr => {
+        const [turkishDay, hours] = dayStr.split(': ');
+        const day = dayMap[turkishDay];
+        
+        if (day) {
+            if (hours === 'Kapalı') {
+                formattedHours[day] = { open: null, close: null };
+            } else if (hours === '24 saat açık') {
+                formattedHours[day] = { open: '00:00', close: '23:59' };
+            }
+            // ... diğer dönüşümler
+        }
+    });
+
+    return formattedHours;
+}
+
+## 12. Command Pattern
+**Kullanım Amacı**: İstekleri nesneler olarak kapsüllemek.
+
+**Nerede Kullanıldı**: 
+- Frontend'de kullanıcı işlemlerinin yönetimi
+- Admin panelinde CRUD işlemleri
+
+**Örnek**:
+```javascript
+// frontyeni/assets/js/admin.js
+const adminCommands = {
+    addPlace: async (placeData) => {
+        const response = await fetch(`${API_URL}/places`, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${getToken()}`
             },
-            body: JSON.stringify({ email, password })
+            body: JSON.stringify(placeData)
         });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-            throw new Error(data.message || 'Giriş başarısız');
-        }
-
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('user', JSON.stringify(data.user));
-        window.location.href = 'profile.html';
-    } catch (error) {
-        console.error('Login error:', error);
-        alert(error.message);
-    }
-}
-
-// frontyeni/assets/js/profile.js
-async function getProfile() {
-    try {
-        const token = localStorage.getItem('token');
-        if (!token) {
-            window.location.href = 'index.html';
-            return;
-        }
-
-        const response = await fetch(`${API_URL}/profile/me`, {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        });
-
-        const data = await response.json();
-        // ... form doldurma işlemleri
-    } catch (error) {
-        console.error('Profil bilgileri alınırken hata:', error);
-        alert(error.message);
-    }
-}
-```
-
-## 4. Observer Pattern
-**Kullanım Amacı**: DOM olaylarını dinlemek ve tepki vermek.
-
-**Projemizdeki Kullanım**:
-```javascript
-// frontyeni/assets/js/auth.js
-document.addEventListener('DOMContentLoaded', () => {
-    const loginForm = document.getElementById('loginForm');
-    const registerForm = document.getElementById('registerForm');
-
-    if (loginForm) {
-        loginForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = e.target.querySelector('input[type="email"]').value;
-            const password = e.target.querySelector('input[type="password"]').value;
-            await login(email, password);
-        });
-    }
-
-    if (registerForm) {
-        registerForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const fullName = e.target.querySelector('input[type="text"]').value;
-            const email = e.target.querySelector('input[type="email"]').value;
-            const password = e.target.querySelector('input[type="password"]').value;
-            await register(fullName, email, password);
-        });
-    }
-});
-```
-
-## 5. Singleton Pattern
-**Kullanım Amacı**: Uygulama genelinde tek bir veri deposu kullanmak.
-
-**Projemizdeki Kullanım**:
-```javascript
-// frontyeni/assets/js/auth.js ve profile.js'de localStorage kullanımı
-// Token saklama
-localStorage.setItem('token', data.token);
-const token = localStorage.getItem('token');
-
-// Kullanıcı bilgisi saklama
-localStorage.setItem('user', JSON.stringify(data.user));
-const user = JSON.parse(localStorage.getItem('user'));
-
-// Çıkış yapma
-localStorage.removeItem('token');
-localStorage.removeItem('user');
-```
-
-## 6. SOLID Prensipleri
-**Kullanım Amacı**: Kodun sürdürülebilir ve genişletilebilir olması.
-
-**Projemizdeki Kullanım**:
-```javascript
-// Single Responsibility Principle örneği:
-// backend/routes/auth.js - Sadece kimlik doğrulama işlemleri
-router.post('/register', async (req, res) => {
-    // Kayıt işlemleri
-});
-
-router.post('/login', async (req, res) => {
-    // Giriş işlemleri
-});
-
-// backend/routes/profile.js - Sadece profil işlemleri
-router.get('/me', authMiddleware, async (req, res) => {
-    // Profil getirme
-});
-
-router.put('/update', authMiddleware, async (req, res) => {
-    // Profil güncelleme
-});
-```
-
-## 7. Async/Await Pattern
-**Kullanım Amacı**: Asenkron işlemleri yönetmek.
-
-**Projemizdeki Kullanım**:
-```javascript
-// frontyeni/assets/js/profile.js
-async function updateProfile(event) {
-    event.preventDefault();
-
-    try {
-        const token = localStorage.getItem('token');
-        if (!token) {
-            window.location.href = 'index.html';
-            return;
-        }
-
-        const fullName = document.getElementById('fullName').value;
-        const email = document.getElementById('email').value;
-
-        const response = await fetch(`${API_URL}/profile/update`, {
+        return response.json();
+    },
+    updatePlace: async (id, placeData) => {
+        const response = await fetch(`${API_URL}/places/${id}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
+                'Authorization': `Bearer ${getToken()}`
             },
-            body: JSON.stringify({ fullName, email })
+            body: JSON.stringify(placeData)
         });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-            throw new Error(data.message || 'Profil güncellenemedi');
-        }
-
-        localStorage.setItem('user', JSON.stringify(data.user));
-        alert('Profil bilgileri başarıyla güncellendi');
-        window.location.reload();
-
-    } catch (error) {
-        console.error('Profil güncellenirken hata:', error);
-        alert(error.message);
+        return response.json();
+    },
+    deletePlace: async (id) => {
+        const response = await fetch(`${API_URL}/places/${id}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${getToken()}`
+            }
+        });
+        return response.json();
     }
-}
-```
+};
 
-## 8. Factory Pattern
-**Kullanım Amacı**: Nesne oluşturma işlemlerini standartlaştırmak.
-
-**Projemizdeki Kullanım**:
-```javascript
-// backend/models/User.js
-const mongoose = require('mongoose');
-const userSchema = new mongoose.Schema({...});
-const User = mongoose.model('User', userSchema);
-
-// Kullanım
-const user = new User({
-    fullName: req.body.fullName,
-    email: req.body.email,
-    password: hashedPassword
-});
-```
-
-## 9. Strategy Pattern
-**Kullanım Amacı**: Farklı HTTP metodları için farklı stratejiler uygulamak.
-
-**Projemizdeki Kullanım**:
-```javascript
-// backend/routes/profile.js
-// Her HTTP metodu için farklı strateji
-router.get('/me', authMiddleware, async (req, res) => {
-    // GET stratejisi - Profil bilgilerini getir
-});
-
-router.put('/update', authMiddleware, async (req, res) => {
-    // PUT stratejisi - Profil bilgilerini güncelle
-});
-
-router.put('/change-password', authMiddleware, async (req, res) => {
-    // PUT stratejisi - Şifre değiştir
-});
-```
-
-## 10. Error Handling Pattern
-**Kullanım Amacı**: Hataları tutarlı bir şekilde yönetmek.
-
-**Projemizdeki Kullanım**:
-```javascript
-// Backend hata yönetimi (backend/routes/profile.js)
-try {
-    const { fullName, email } = req.body;
-    // ... işlemler
-} catch (error) {
-    res.status(500).json({ message: 'Sunucu hatası', error: error.message });
-}
-
-// Frontend hata yönetimi (frontyeni/assets/js/profile.js)
-try {
-    const response = await fetch(`${API_URL}/profile/me`);
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.message);
-} catch (error) {
-    console.error('Profil bilgileri alınırken hata:', error);
-    alert(error.message);
-}
-```
-
-## Faydaları
-1. **Kod Organizasyonu**: Her dosya ve fonksiyon belirli bir sorumluluğa sahip
-2. **Bakım Kolaylığı**: Değişiklikler izole edilmiş, bir yerdeki değişiklik diğerlerini etkilemiyor
-3. **Test Edilebilirlik**: Her modül bağımsız olarak test edilebilir
-4. **Genişletilebilirlik**: Yeni özellikler (örn: yeni profil özellikleri) kolayca eklenebilir
-5. **Hata Yönetimi**: Hem backend hem frontend'de tutarlı hata yakalama
-6. **Performans**: Asenkron işlemler etkili bir şekilde yönetiliyor
-7. **Güvenlik**: Middleware ile merkezi yetkilendirme kontrolü
-8. **Kod Tekrarını Önleme**: Ortak fonksiyonlar (örn: auth middleware) tekrar kullanılıyor 
+// Kullanımı
+await adminCommands.addPlace(newPlaceData);
+``` 
