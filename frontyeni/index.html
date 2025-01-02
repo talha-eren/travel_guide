@@ -223,5 +223,38 @@
     <script src="assets/js/components.js" defer></script>
     <script src="assets/js/auth.js" defer></script>
     <script src="assets/js/places.js" defer></script>
+    <script src="assets/js/chatbot.js" defer></script>
+
+    <!-- AI Chatbot -->
+    <button class="chatbot-button" id="chatbotButton">
+        <i class="fas fa-robot"></i>
+    </button>
+
+    <div class="chatbot-container" id="chatbotContainer">
+        <div class="chatbot-header">
+            <h3>Gezi Asistanı</h3>
+            <div class="chatbot-header-buttons">
+                <button class="chatbot-reset" id="chatbotReset" title="Sohbeti Sıfırla">
+                    <i class="fas fa-trash"></i>
+                </button>
+                <button class="chatbot-fullscreen" id="chatbotFullscreen">
+                    <i class="fas fa-expand"></i>
+                </button>
+                <button class="chatbot-close" id="chatbotClose">&times;</button>
+            </div>
+        </div>
+        <div class="chatbot-messages" id="chatbotMessages">
+            <!-- Messages will be added dynamically -->
+        </div>
+        <div class="chatbot-suggestions" id="chatbotSuggestions">
+            <!-- Suggestion chips will be added dynamically -->
+        </div>
+        <div class="chatbot-input">
+            <input type="text" id="chatbotInput" placeholder="Bir soru sorun...">
+            <button id="chatbotSend">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
 </body> 
 </html> 

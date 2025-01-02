@@ -115,5 +115,30 @@
     <script src="assets/js/auth.js"></script>
     <script src="assets/js/places.js"></script>
     <script src="assets/js/profile.js"></script>
+    <script src="assets/js/chatbot.js"></script>
+
+    <!-- AI Chatbot -->
+    <button class="chatbot-button" id="chatbotButton">
+        <i class="fas fa-robot"></i>
+    </button>
+
+    <div class="chatbot-container" id="chatbotContainer">
+        <div class="chatbot-header">
+            <h3>Gezi Asistanı</h3>
+            <button class="chatbot-close" id="chatbotClose">&times;</button>
+        </div>
+        <div class="chatbot-messages" id="chatbotMessages">
+            <!-- Messages will be added dynamically -->
+        </div>
+        <div class="chatbot-suggestions" id="chatbotSuggestions">
+            <!-- Suggestion chips will be added dynamically -->
+        </div>
+        <div class="chatbot-input">
+            <input type="text" id="chatbotInput" placeholder="Bir soru sorun...">
+            <button id="chatbotSend">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
 </body>
 </html> 
